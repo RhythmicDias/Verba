@@ -237,7 +237,8 @@ pub fn run() {
             paste_and_close,
             close_popup,
             update_global_shortcut,
-            llm::call_llm
+            llm::call_llm,
+            llm::get_ollama_models
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -337,3 +337,48 @@ pub async fn call_llm(
 
     Ok(clean_output(&result_text, &style))
 }
+
+#[tauri::command]
+pub async fn get_ollama_models(endpoint: String) -> Result<Vec<String>, String> {
+    let mut base_url = "http://localhost:11434".to_string();
+    if let Ok(url) = reqwest::Url::parse(&endpoint) {
+        if let Some(host) = url.host_str() {
+            let port = url.port_or_known_default().unwrap_or(11434);
+            let scheme = url.scheme();
+            base_url = format!("{}://{}:{}", scheme, host, port);
+        }
+    }
+
+    let url = format!("{}/api/tags", base_url);
+    let client = reqwest::Client::new();
+    let res = client.get(&url)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to connect to Ollama: {}", e))?;
+
+    if !res.status().is_success() {
+        return Err(format!("Ollama returned status: {}", res.status()));
+    }
+
+    #[derive(Deserialize)]
+    struct OllamaModel {
+        name: String,
+    }
+
+    #[derive(Deserialize)]
+    struct OllamaTagsResponse {
+        models: Option<Vec<OllamaModel>>,
+    }
+
+    let data: OllamaTagsResponse = res.json()
+        .await
+        .map_err(|e| format!("Failed to parse Ollama response: {}", e))?;
+
+    let models = data.models
+        .unwrap_or_default()
+        .into_iter()
+        .map(|m| m.name)
+        .collect();
+
+    Ok(models)
+}

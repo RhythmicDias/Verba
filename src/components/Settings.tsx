@@ -83,16 +83,7 @@ export default function Settings() {
   const fetchOllamaModels = async (endpoint: string) => {
     setIsFetchingOllamaModels(true);
     try {
-      let baseUrl = "http://localhost:11434";
-      try {
-        const url = new URL(endpoint);
-        baseUrl = `${url.protocol}//${url.host}`;
-      } catch (_) {}
-
-      const response = await fetch(`${baseUrl}/api/tags`);
-      if (!response.ok) throw new Error("Ollama tags API responded with an error");
-      const data = await response.json();
-      const models = data.models?.map((m: any) => m.name) || [];
+      const models: string[] = await invoke("get_ollama_models", { endpoint });
       setOllamaModels(models);
       showTemporaryStatus(`Found ${models.length} local Ollama models.`);
     } catch (err) {
