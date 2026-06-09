@@ -1,0 +1,28 @@
+# Set default behavior to automatic text conversion.
+* text=auto
+
+# Declare files that will always have LF line endings on checkin.
+*.rs text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Denote binary files (images, fonts, lockfiles, cargo build artifacts)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.pdf binary
+Cargo.lock binary
+package-lock.json binary
