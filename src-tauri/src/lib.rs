@@ -1,5 +1,6 @@
 mod clipboard;
 mod storage;
+mod llm;
 
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
@@ -12,8 +13,8 @@ struct AppState {
 }
 
 #[tauri::command]
-fn get_api_key(provider: String) -> Option<String> {
-    storage::get_api_key(&provider)
+fn has_api_key(provider: String) -> bool {
+    storage::get_api_key(&provider).is_some()
 }
 
 #[tauri::command]
@@ -226,7 +227,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
-            get_api_key,
+            has_api_key,
             set_api_key,
             delete_api_key,
             get_app_config,
@@ -235,7 +236,8 @@ pub fn run() {
             get_copied_text,
             paste_and_close,
             close_popup,
-            update_global_shortcut
+            update_global_shortcut,
+            llm::call_llm
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

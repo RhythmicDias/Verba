@@ -138,9 +138,9 @@ export default function Popup() {
       const freshConfig: AppConfig = await invoke("get_app_config");
 
       const activeProvider = freshConfig.active_provider;
-      const apiKey: string | null = await invoke("get_api_key", { provider: activeProvider });
+      const hasKey: boolean = await invoke("has_api_key", { provider: activeProvider });
       
-      if (!apiKey && activeProvider !== "ollama") {
+      if (!hasKey && activeProvider !== "ollama") {
         throw new Error(`API key for ${activeProvider} is missing.`);
       }
 
@@ -161,8 +161,7 @@ export default function Popup() {
         copiedText,
         styleId,
         isCustom ? customPrompt : null,
-        llmConfig,
-        apiKey || ""
+        llmConfig
       );
 
       // Save to history in Rust config

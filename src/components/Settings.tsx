@@ -35,6 +35,7 @@ interface AppConfig {
   ollama_endpoint: string;
   openrouter_model: string;
   openrouter_endpoint: string;
+  save_history: boolean;
   history: HistoryEntry[];
 }
 
@@ -118,8 +119,8 @@ export default function Settings() {
       const checkProviders = ["gemini", "openai", "anthropic", "grok", "openrouter"];
       const configuredStatus: Record<string, boolean> = {};
       for (const p of checkProviders) {
-        const val: string | null = await invoke("get_api_key", { provider: p });
-        configuredStatus[p] = !!val;
+        const val: boolean = await invoke("has_api_key", { provider: p });
+        configuredStatus[p] = val;
       }
       setKeysConfigured(configuredStatus);
     } catch (err) {
@@ -231,7 +232,7 @@ export default function Settings() {
   };
 
   const clearAllHistory = async () => {
-    if (!config || !confirm("Clear all session history?")) return;
+    if (!config || !confirm("Clear all local history?")) return;
     const newConfig = { ...config, history: [] };
     setConfig(newConfig);
     if (draftConfig) {
@@ -306,7 +307,7 @@ export default function Settings() {
             }`}
           >
             <History size={16} />
-            Session History
+            Local History
           </button>
         </nav>
 
@@ -327,7 +328,7 @@ export default function Settings() {
           <h2 className="text-sm font-bold tracking-tight text-white uppercase">
             {activeTab === "keys" && "Manage API Connections"}
             {activeTab === "preferences" && "Application Settings"}
-            {activeTab === "history" && "Session log history"}
+            {activeTab === "history" && "Local log history"}
           </h2>
           <div className="flex items-center gap-3">
             {saveStatus && (
@@ -571,6 +572,23 @@ export default function Settings() {
                 </div>
               </div>
 
+              {/* Privacy Settings */}
+              <div className="bg-[#eaecef] border border-[#d2d5db]/80 rounded-2xl p-5 space-y-4 shadow-sm">
+                <h3 className="text-xs font-bold text-[#23282f] tracking-wide uppercase">Privacy Settings</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-[11px] text-[#23282f] font-bold uppercase tracking-wider block">Save Local History</label>
+                    <span className="text-[10px] text-slate-500 font-medium">Toggle whether polished text is persistently stored in your local configuration.</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={draftConfig.save_history}
+                    onChange={(e) => updateDraftField("save_history", e.target.checked)}
+                    className="w-4 h-4 text-[#23282f] border-slate-300 rounded focus:ring-[#23282f]"
+                  />
+                </div>
+              </div>
+
               {/* Shortcut Manager Settings */}
               <div className="bg-[#eaecef] border border-[#d2d5db]/80 rounded-2xl p-5 space-y-4 shadow-sm">
                 <h3 className="text-xs font-bold text-[#23282f] tracking-wide uppercase flex items-center gap-2">
@@ -612,7 +630,7 @@ export default function Settings() {
             </div>
           )}
 
-          {/* TAB 3: SESSION HISTORY - Dark cards for visual contrast */}
+          {/* TAB 3: LOCAL HISTORY - Dark cards for visual contrast */}
           {activeTab === "history" && (
             <div className="space-y-4">
               <div className="flex justify-between items-center text-white">
@@ -631,7 +649,7 @@ export default function Settings() {
 
               {config.history.length === 0 ? (
                 <div className="bg-[#eaecef] border border-[#d2d5db]/80 rounded-2xl p-8 text-center text-slate-500 text-xs shadow-sm">
-                  No sessions recorded yet. Polish any text to write to this dashboard.
+                  No local history recorded yet. Polish any text to write to this dashboard.
                 </div>
               ) : (
                 <div className="space-y-4">

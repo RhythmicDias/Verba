@@ -31,6 +31,7 @@ pub struct AppConfig {
     pub ollama_endpoint: String,
     pub openrouter_model: String,
     pub openrouter_endpoint: String,
+    pub save_history: bool,
     pub history: Vec<HistoryEntry>,
 }
 
@@ -48,6 +49,7 @@ impl Default for AppConfig {
             ollama_endpoint: "http://localhost:11434/v1/chat/completions".to_string(),
             openrouter_model: "google/gemini-2.5-flash".to_string(),
             openrouter_endpoint: "https://openrouter.ai/api/v1/chat/completions".to_string(),
+            save_history: true,
             history: Vec::new(),
         }
     }
@@ -137,11 +139,13 @@ pub fn add_history_entry(
         provider: provider.to_string(),
         style: style.to_string(),
     };
-    config.history.insert(0, entry.clone());
-    // Keep max 100 history entries
-    if config.history.len() > 100 {
-        config.history.truncate(100);
+    if config.save_history {
+        config.history.insert(0, entry.clone());
+        // Keep max 100 history entries
+        if config.history.len() > 100 {
+            config.history.truncate(100);
+        }
+        save_config(app_handle, &config)?;
     }
-    save_config(app_handle, &config)?;
     Ok(entry)
 }
