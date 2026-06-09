@@ -159,6 +159,8 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(AppState {
             copied_text: Mutex::new(String::new()),
         })
@@ -193,8 +195,9 @@ pub fn run() {
 
             // Create tray menu items
             let settings_i = tauri::menu::MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+            let update_i = tauri::menu::MenuItem::with_id(app, "update", "Check for Updates...", true, None::<&str>)?;
             let quit_i = tauri::menu::MenuItem::with_id(app, "quit", "Exit", true, None::<&str>)?;
-            let menu = tauri::menu::Menu::with_items(app, &[&settings_i, &quit_i])?;
+            let menu = tauri::menu::Menu::with_items(app, &[&settings_i, &update_i, &quit_i])?;
 
             // Retrieve the tray icon configured in tauri.conf.json
             if let Some(tray) = app.tray_by_id("main") {
@@ -206,6 +209,13 @@ pub fn run() {
                             if let Some(window) = app.get_webview_window("main") {
                                 let _ = window.show();
                                 let _ = window.set_focus();
+                            }
+                        }
+                        "update" => {
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                                let _ = window.emit("trigger-update-check", ());
                             }
                         }
                         "quit" => {

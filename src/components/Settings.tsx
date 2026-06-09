@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
+import { check, Update } from "@tauri-apps/plugin-updater";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { getVersion } from "@tauri-apps/api/app";
 import { 
   Key, 
   Settings as SettingsIcon, 
@@ -11,7 +15,8 @@ import {
   Trash2, 
   Copy,
   RefreshCw,
-  Save
+  Save,
+  Download
 } from "lucide-react";
 
 interface HistoryEntry {
@@ -39,7 +44,7 @@ interface AppConfig {
   history: HistoryEntry[];
 }
 
-type TabType = "keys" | "preferences" | "history";
+type TabType = "keys" | "preferences" | "history" | "update";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState<TabType>("keys");
@@ -76,9 +81,79 @@ export default function Settings() {
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [isFetchingOllamaModels, setIsFetchingOllamaModels] = useState(false);
 
+  // Updater State
+  const [currentVersion, setCurrentVersion] = useState("0.1.0");
+  const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "available" | "downloading" | "installing" | "up-to-date" | "error">("idle");
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [updateManifest, setUpdateManifest] = useState<Update | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+
   useEffect(() => {
     loadConfig();
+
+    // Fetch current app version
+    getVersion().then((v) => setCurrentVersion(v)).catch((err) => console.error("Failed to read app version", err));
+
+    // Register trigger update listener from system tray
+    const unlistenPromise = listen("trigger-update-check", () => {
+      setActiveTab("update");
+      checkForUpdates(true);
+    });
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
   }, []);
+
+  const checkForUpdates = async (manual = true) => {
+    setUpdateStatus("checking");
+    setUpdateError(null);
+    try {
+      const update = await check();
+      if (update) {
+        setUpdateManifest(update);
+        setUpdateStatus("available");
+      } else {
+        setUpdateStatus("up-to-date");
+        if (manual) showTemporaryStatus("You are running the latest version!");
+      }
+    } catch (err: any) {
+      console.error("Check for updates failed:", err);
+      setUpdateStatus("error");
+      setUpdateError(err.toString());
+    }
+  };
+
+  const installUpdate = async () => {
+    if (!updateManifest) return;
+    setUpdateStatus("downloading");
+    setDownloadProgress(0);
+    try {
+      let downloaded = 0;
+      let contentLength = 0;
+      await updateManifest.downloadAndInstall((event: any) => {
+        switch (event.event) {
+          case 'Started':
+            contentLength = event.data.contentLength || 1;
+            setUpdateStatus("downloading");
+            break;
+          case 'Progress':
+            downloaded += event.data.chunkLength;
+            setDownloadProgress(Math.round((downloaded / contentLength) * 100));
+            break;
+          case 'Finished':
+            setUpdateStatus("installing");
+            break;
+        }
+      });
+      showTemporaryStatus("Relaunching app to apply update...");
+      await relaunch();
+    } catch (err: any) {
+      console.error("Install update failed:", err);
+      setUpdateStatus("error");
+      setUpdateError(err.toString());
+    }
+  };
 
   const fetchOllamaModels = async (endpoint: string) => {
     setIsFetchingOllamaModels(true);
@@ -300,6 +375,17 @@ export default function Settings() {
             <History size={16} />
             Local History
           </button>
+          <button
+            onClick={() => setActiveTab("update")}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${
+              activeTab === "update"
+                ? "bg-[#eaecef] text-[#23282f] shadow-sm"
+                : "text-slate-400 hover:bg-[#343b45]/50 hover:text-white"
+            }`}
+          >
+            <RefreshCw size={16} />
+            Updates
+          </button>
         </nav>
 
         {/* Footer info with accent color */}
@@ -320,6 +406,7 @@ export default function Settings() {
             {activeTab === "keys" && "Manage API Connections"}
             {activeTab === "preferences" && "Application Settings"}
             {activeTab === "history" && "Local log history"}
+            {activeTab === "update" && "Application Updates"}
           </h2>
           <div className="flex items-center gap-3">
             {saveStatus && (
@@ -699,6 +786,124 @@ export default function Settings() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 4: UPDATES */}
+          {activeTab === "update" && (
+            <div className="bg-[#eaecef] border border-[#d2d5db]/80 rounded-2xl p-6 space-y-6 shadow-sm text-slate-800">
+              <div className="flex items-center justify-between border-b border-[#d2d5db] pb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-[#23282f] tracking-wide uppercase">Application Updates</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Current Version: <span className="font-extrabold text-[#23282f]">{currentVersion}</span></p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-[#23282f] flex items-center justify-center text-[#e8ff00] font-bold">
+                  v2
+                </div>
+              </div>
+
+              {updateStatus === "idle" && (
+                <div className="py-4 text-center space-y-4">
+                  <p className="text-xs text-slate-600">Check if there is a newer release of Verba available.</p>
+                  <button
+                    onClick={() => checkForUpdates(true)}
+                    className="bg-[#23282f] hover:bg-[#343b45] text-xs text-[#e8ff00] px-5 py-2 rounded-full font-bold transition-all shadow-sm flex items-center gap-2 mx-auto cursor-pointer"
+                  >
+                    <RefreshCw size={13} /> Check for Updates
+                  </button>
+                </div>
+              )}
+
+              {updateStatus === "checking" && (
+                <div className="py-8 flex flex-col items-center justify-center gap-3">
+                  <RefreshCw size={24} className="text-[#23282f] animate-spin" />
+                  <p className="text-xs font-bold text-slate-600 uppercase tracking-wide">Checking for updates...</p>
+                </div>
+              )}
+
+              {updateStatus === "up-to-date" && (
+                <div className="py-6 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto shadow-inner">
+                    <Check size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800">You are up to date!</p>
+                    <p className="text-[10px] text-slate-500 mt-1">Verba {currentVersion} is currently the newest version available.</p>
+                  </div>
+                  <button
+                    onClick={() => checkForUpdates(true)}
+                    className="border border-[#23282f] hover:bg-slate-100 text-xs text-[#23282f] px-5 py-2 rounded-full font-bold transition-all shadow-sm flex items-center gap-2 mx-auto cursor-pointer"
+                  >
+                    <RefreshCw size={13} /> Check Again
+                  </button>
+                </div>
+              )}
+
+              {updateStatus === "available" && updateManifest && (
+                <div className="space-y-4">
+                  <div className="bg-[#23282f] text-white p-4.5 rounded-xl border border-[#343b45] space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-[#e8ff00] uppercase tracking-wide">Update Available</span>
+                      <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono">v{updateManifest.version}</span>
+                    </div>
+                    {updateManifest.body && (
+                      <div className="text-[11px] text-slate-300 leading-relaxed border-t border-[#343b45]/60 pt-2 font-medium italic">
+                        {updateManifest.body}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setUpdateStatus("idle")}
+                      className="border border-slate-300 hover:bg-slate-100 text-xs text-slate-700 px-4 py-1.5 rounded-full font-bold transition-all cursor-pointer"
+                    >
+                      Later
+                    </button>
+                    <button
+                      onClick={installUpdate}
+                      className="bg-green-600 hover:bg-green-500 text-xs text-white px-5 py-1.5 rounded-full font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Download size={13} /> Update Now
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {(updateStatus === "downloading" || updateStatus === "installing") && (
+                <div className="py-6 space-y-4">
+                  <div className="flex justify-between text-xs font-bold text-slate-700">
+                    <span>{updateStatus === "downloading" ? "Downloading update..." : "Installing update..."}</span>
+                    {updateStatus === "downloading" && <span>{downloadProgress}%</span>}
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2 shadow-inner overflow-hidden">
+                    <div 
+                      className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${updateStatus === "downloading" ? downloadProgress : 100}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 italic text-center">
+                    {updateStatus === "downloading" 
+                      ? "Retrieving update files from secure release servers..." 
+                      : "Applying updates. The application will restart automatically."}
+                  </p>
+                </div>
+              )}
+
+              {updateStatus === "error" && (
+                <div className="py-4 space-y-4 text-center">
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 text-xs text-red-700 leading-relaxed max-w-md mx-auto shadow-sm">
+                    <p className="font-bold">Check Failed</p>
+                    <p className="text-[10px] mt-1 text-red-600/90 font-mono break-all">{updateError}</p>
+                  </div>
+                  <button
+                    onClick={() => checkForUpdates(true)}
+                    className="bg-[#23282f] hover:bg-[#343b45] text-xs text-[#e8ff00] px-5 py-2 rounded-full font-bold transition-all shadow-sm flex items-center gap-2 mx-auto cursor-pointer"
+                  >
+                    <RefreshCw size={13} /> Try Again
+                  </button>
                 </div>
               )}
             </div>

@@ -42,6 +42,15 @@
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws://localhost:* http://localhost:*;"
     }
   },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://raw.githubusercontent.com/RhythmicDias/Verba/main/update.json"
+      ],
+      "pubkey": "dW50aWRsZWRfcHVibGljX2tleV9wbGFjZWhvbGRlcg=="
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
