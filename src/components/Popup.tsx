@@ -183,7 +183,7 @@ export default function Popup() {
   return (
     <div 
       onMouseDown={handleMouseDown}
-      className="w-screen h-screen bg-transparent flex items-center justify-center overflow-hidden p-3 select-none"
+      className="w-screen h-screen bg-transparent flex items-center justify-center overflow-hidden p-6 select-none"
     >
       {/* 
         Outer Container Card
@@ -193,7 +193,7 @@ export default function Popup() {
       <div 
         onMouseDown={handleMouseDown}
         data-tauri-drag-region
-        className={`bg-[#23282f] border border-slate-700/40 shadow-2xl overflow-hidden flex flex-col transition-all duration-500 ease-in-out ${
+        className={`bg-[#23282f] border border-slate-700/40 shadow-xl overflow-hidden flex flex-col transition-all duration-500 ease-in-out ${
           isLoading 
             ? "w-[150px] h-[100px] rounded-3xl justify-center items-center p-3 border-[#e8ff00]/60" 
             : "w-[350px] h-[315px] rounded-2xl p-3"

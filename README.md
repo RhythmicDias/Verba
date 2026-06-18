@@ -24,6 +24,9 @@
 - **Global Hotkey Activation**: Quickly select any text, press the hotkey (default: `Ctrl+Alt+P`), and watch it load in the Verba popup.
 - **AI Text Polishing**: Integrate with top-tier AI LLM providers to clean up grammar, tone, style, or translate text.
 - **Auto-Paste Back**: Seamlessly writes polished text back to your clipboard and injects it back into your active window.
+- **Clipboard Preservation**: Backs up and restores your pre-existing clipboard contents automatically, preventing pollution of your copy/paste queue.
+- **Keyboard Safety Validation**: Dynamically detects physical keystrokes and waits for hotkey releases before executing `Ctrl+C`, preventing selection replacement bugs (e.g. typing a literal 'c' instead of copying).
+- **Anti-Clipping Window Layout**: Custom container layouts with fine-tuned paddings and margins to prevent CSS box-shadow clipping issues on transparent overlays.
 - **System Tray Menu**: Run the app in the background with a system tray menu allowing easy access to settings and application exit.
 - **Polishing History**: Keep track of previously edited texts for easy reference and reuse.
 - **Secure Storage**: Safe handling of API keys using system-native keyring storage via Rust.

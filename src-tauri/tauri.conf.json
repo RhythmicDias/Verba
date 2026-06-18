@@ -5,7 +5,7 @@
   "identifier": "com.diass.verba",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:1450",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -22,8 +22,8 @@
       {
         "label": "popup",
         "title": "Verba Popup",
-        "width": 380,
-        "height": 345,
+        "width": 400,
+        "height": 365,
         "resizable": false,
         "visible": false,
         "transparent": true,

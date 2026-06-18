@@ -332,9 +332,7 @@ export default function Settings() {
       {/* Sidebar - Matte dark slate */}
       <div className="w-64 bg-[#23282f] border-r border-[#343b45]/40 flex flex-col p-6 text-slate-100">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 rounded-full bg-[#e8ff00] flex items-center justify-center text-[#23282f] font-extrabold shadow-md shadow-[#e8ff00]/10">
-            V
-          </div>
+          <img src="/logo.png" alt="Verba Logo" className="w-8 h-8 rounded-lg shadow-md border border-slate-700/30 object-cover" />
           <div>
             <h1 className="text-sm font-bold tracking-tight text-white">Verba</h1>
             <span className="text-[10px] text-slate-400 font-medium">Control Center</span>
@@ -389,12 +387,15 @@ export default function Settings() {
         </nav>
 
         {/* Footer info with accent color */}
-        <div className="mt-auto pt-6 border-t border-[#343b45]/40 text-[10px] text-slate-400 flex flex-col gap-1">
-          <p className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#e8ff00]" />
-            Local RTX CUDA optimized
-          </p>
-          <p>Tauri Version 2.0 • React</p>
+        <div className="mt-auto pt-6 border-t border-[#343b45]/40 text-[10px] text-slate-400 flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-slate-200">
+            <span>Verba v{currentVersion}</span>
+            <span className="flex items-center gap-1 text-[10px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#e8ff00]" />
+              RTX CUDA Active
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500">Developed by Stephen Dias</p>
         </div>
       </div>
 

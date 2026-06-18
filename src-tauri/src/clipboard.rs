@@ -5,6 +5,7 @@ use std::time::Duration;
 #[cfg(target_os = "windows")]
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP,
+    GetAsyncKeyState,
 };
 
 #[cfg(target_os = "windows")]
@@ -32,7 +33,40 @@ unsafe fn send_key_event(vk: u16, up: bool) {
 }
 
 #[cfg(target_os = "windows")]
+pub fn wait_for_keys_release() {
+    let keys_to_check = [
+        0x11, // VK_CONTROL
+        0x12, // VK_MENU (Alt)
+        0x10, // VK_SHIFT
+        0x5B, // VK_LWIN
+        0x5C, // VK_RWIN
+        // F1 to F12
+        0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B,
+    ];
+
+    let start = std::time::Instant::now();
+    unsafe {
+        while start.elapsed() < Duration::from_millis(800) {
+            let mut any_pressed = false;
+            for &vk in &keys_to_check {
+                if GetAsyncKeyState(vk as i32) as u16 & 0x8000 != 0 {
+                    any_pressed = true;
+                    break;
+                }
+            }
+            if !any_pressed {
+                break;
+            }
+            sleep(Duration::from_millis(10));
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
 pub fn simulate_copy() {
+    // Wait for modifier keys to be physically released first
+    wait_for_keys_release();
+
     unsafe {
         // Press Ctrl
         send_key_event(VK_CONTROL, false);
@@ -67,12 +101,30 @@ pub fn simulate_paste() {
     }
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "macos")]
 pub fn simulate_copy() {
-    println!("Simulate copy is only supported on Windows in this implementation.");
+    let _ = std::process::Command::new("osascript")
+        .arg("-e")
+        .arg("tell application \"System Events\" to keystroke \"c\" using {command down}")
+        .output();
+    std::thread::sleep(std::time::Duration::from_millis(150));
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "macos")]
 pub fn simulate_paste() {
-    println!("Simulate paste is only supported on Windows in this implementation.");
+    let _ = std::process::Command::new("osascript")
+        .arg("-e")
+        .arg("tell application \"System Events\" to keystroke \"v\" using {command down}")
+        .output();
+    std::thread::sleep(std::time::Duration::from_millis(150));
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn simulate_copy() {
+    println!("Simulate copy is only supported on Windows and macOS in this implementation.");
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+pub fn simulate_paste() {
+    println!("Simulate paste is only supported on Windows and macOS in this implementation.");
 }

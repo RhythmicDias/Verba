@@ -12,14 +12,14 @@ pub struct LLMConfig {
 
 fn get_style_prompt(style: &str) -> &str {
     match style {
-        "concise" => "Make text highly concise, clear, and punchy. Eliminate filler and redundancy. Output only polished text.",
-        "detailed" => "Elaborate with clarity. Add comprehensive detail while keeping it clear. Output only polished text.",
-        "formal" => "Formal, elegant, sophisticated, and serious tone. No slang or casual phrasing. Output only polished text.",
-        "funny" => "Witty, humorous, and engaging twist. Preserving core message context. Output only polished text.",
-        "medical" => "Precise clinical medical note format. Extremely concise. Standard medical terminology. Output only polished text.",
-        "summarize" => "Summarize the text clearly without losing details.  Output only the summarized text.",
-        "generative" => "Generate content based on the prompt instructions. Output only the generated content.",
-        _ => "Polite, professional, workplace business tone. Clear and polished. Output only polished text.",
+        "concise" => "Make the text highly concise, clear, and punchy. Eliminate fluff, passive voice, wordiness, and redundancies. Direct, strong, and active language is preferred while preserving the core message.",
+        "detailed" => "Elaborate on the input text with clarity. Expand on the core concepts, providing thorough details, context, and clear logical progression, while remaining readable, engaging, and avoiding filler.",
+        "formal" => "Elevate the text to a formal, elegant, sophisticated, and serious tone. Use high-register vocabulary, precise grammatical structures, and professional transitions. Strictly avoid slang, casual idioms, or contractions.",
+        "funny" => "Infuse the text with a witty, humorous, and engaging twist. Maintain the core meaning and context, but make it lighthearted, clever, and fun.",
+        "medical" => "Format the text into a professional, concise, clinical medical text. Use standard medical terminology, precise clinical language. Do not make up things.",
+        "summarize" => "Summarize the text clearly, highlighting the most important information and key takeaways. Avoid losing critical context, but omit fluff and unnecessary details. Provide a clean, cohesive summary.",
+        "generative" => "Generate content strictly based on the prompt instructions and the provided context details. DO NOT be chatty. Do NOT include any introductory remarks, conversational filler, conversational prefixes, explanations, or notes. Output ONLY the raw generated content.",
+        _ => "Refine the text to a polite, professional, and workplace-appropriate business tone. Ensure it is clear, respectful, objective, and grammatically precise, removing casual phrasing or conversational slang.",
     }
 }
 
@@ -87,22 +87,42 @@ pub async fn call_llm(
     let (system_message, user_message) = if style == "generative" {
         (
             format!(
-                "You are a helpful AI assistant. Generate the requested content based on the instructions.\nCRITICAL Constraints:\n- Output ONLY the generated content itself. Do NOT write any introduction, conversational filler (like \"Here is the content:\"), explanations, or wrap the text in quotes.\n- Never use markdown formatting (such as '**' for bold or '*' for italics). Output completely plain text.\n- Never use double-dashes ('--') or em-dashes ('—'). Use standard punctuation instead.\n- {}",
+                "You are a creative generative AI assistant. Your task is to generate high-quality content based on the provided instructions and context.\n\n\
+                 CRITICAL CONSTRAINTS (Violating these will break the application layout):\n\
+                 - Output ONLY the generated content itself. Do NOT write any introductory remarks, conversational filler (e.g., \"Sure, here is...\"), explanations, notes, or wrap the response in quotes. Do NOT be chatty.\n\
+                 - DO NOT use any markdown formatting (e.g., '**' for bold, '*' for italics, '#' for headers). Output raw, completely plain text.\n\
+                 - DO NOT use double-dashes ('--') or em-dashes ('—'). Use standard punctuation (e.g., single dashes or commas) instead.\n\
+                 - {}",
                 emoji_rule
             ),
             if custom_prompt.is_some() {
-                format!("Instruction: {}\nContext/Details: {}", base_instruction, text)
+                format!(
+                    "<instructions>\n{}\n</instructions>\n\n<context_details>\n{}\n</context_details>",
+                    base_instruction, text
+                )
             } else {
-                format!("Instruction/Prompt: {}", text)
+                format!(
+                    "<instructions>\n{}\n</instructions>",
+                    text
+                )
             }
         )
     } else {
         (
             format!(
-                "You are a precise text-polishing editor. Rewrite the text according to this directive: \"{}\".\nCRITICAL Constraints:\n- Output ONLY the polished/rewritten text. Do NOT write any introduction, conversational filler, explanations, or wrap the text in quotes.\n- Never use markdown formatting (such as '**' for bold or '*' for italics). Output completely plain text.\n- Never use double-dashes ('--') or em-dashes ('—'). Rewrite sentences to use standard punctuation instead.\n- {}",
+                "You are an expert, precise text editor and polishing specialist. Your task is to rewrite, refine, and polish the provided text according to this specific style/directive: \"{}\".\n\n\
+                 CRITICAL CONSTRAINTS (Violating these will break the application layout):\n\
+                 - Process and rewrite the text provided within the <target_text> tags.\n\
+                 - Output ONLY the polished/rewritten text itself. Do NOT write any introduction, conversational filler, comments, explanation of your changes, or wrap the output in quotes.\n\
+                 - DO NOT use any markdown formatting (e.g., '**' for bold, '*' for italics, '#' for headers). Output raw, completely plain text.\n\
+                 - DO NOT use double-dashes ('--') or em-dashes ('—'). Rewrite sentences to use standard punctuation instead.\n\
+                 - {}",
                 base_instruction, emoji_rule
             ),
-            format!("Rewrite this target text:\n\n{}", text)
+            format!(
+                "<target_text>\n{}\n</target_text>",
+                text
+            )
         )
     };
 

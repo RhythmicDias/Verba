@@ -10,6 +10,7 @@ use storage::{AppConfig, HistoryEntry};
 
 struct AppState {
     copied_text: Mutex<String>,
+    clipboard_backup: Mutex<Option<String>>,
 }
 
 #[tauri::command]
@@ -55,7 +56,11 @@ fn get_copied_text(state: tauri::State<'_, AppState>) -> String {
 }
 
 #[tauri::command]
-fn paste_and_close(app_handle: AppHandle, text: String) -> Result<(), String> {
+fn paste_and_close(
+    app_handle: AppHandle,
+    text: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
     // Write polished text to clipboard
     app_handle.clipboard().write_text(text).map_err(|e| e.to_string())?;
 
@@ -65,8 +70,15 @@ fn paste_and_close(app_handle: AppHandle, text: String) -> Result<(), String> {
     }
 
     // Simulate native paste key injection
-    #[cfg(target_os = "windows")]
     clipboard::simulate_paste();
+
+    // Sleep briefly to allow the operating system to process the paste command.
+    std::thread::sleep(std::time::Duration::from_millis(150));
+
+    // Restore original backed up clipboard content
+    if let Some(ref val) = *state.clipboard_backup.lock().unwrap() {
+        let _ = app_handle.clipboard().write_text(val.clone());
+    }
 
     Ok(())
 }
@@ -82,6 +94,14 @@ fn close_popup(app_handle: AppHandle) -> Result<(), String> {
 fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
     println!("Global hotkey triggered! Starting copy simulation...");
 
+    let state = app_handle.state::<AppState>();
+
+    // Back up current clipboard content
+    let backup = app_handle.clipboard().read_text().ok();
+    if let Ok(mut backup_guard) = state.clipboard_backup.lock() {
+        *backup_guard = backup;
+    }
+
     // Clear clipboard first to ensure we catch a fresh copy event
     let _ = app_handle.clipboard().write_text("".to_string());
 
@@ -89,7 +109,6 @@ fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
     std::thread::sleep(std::time::Duration::from_millis(250));
 
     // Simulate copy
-    #[cfg(target_os = "windows")]
     clipboard::simulate_copy();
 
     // Poll clipboard for copied text
@@ -105,12 +124,16 @@ fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
         }
     }
 
+    // Restore the backed-up clipboard content immediately so clipboard is clean during edit/process
+    if let Some(ref val) = *state.clipboard_backup.lock().unwrap() {
+        let _ = app_handle.clipboard().write_text(val.clone());
+    }
+
     if copied.is_empty() {
         println!("Warning: Clipboard copy simulation resulted in empty text.");
     }
 
     // Store copied text in AppState
-    let state = app_handle.state::<AppState>();
     if let Ok(mut text_guard) = state.copied_text.lock() {
         *text_guard = copied.clone();
     }
@@ -163,6 +186,7 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .manage(AppState {
             copied_text: Mutex::new(String::new()),
+            clipboard_backup: Mutex::new(None),
         })
         .setup(|app| {
             let app_handle = app.handle().clone();
