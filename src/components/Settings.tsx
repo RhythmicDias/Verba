@@ -81,6 +81,18 @@ export default function Settings() {
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [isFetchingOllamaModels, setIsFetchingOllamaModels] = useState(false);
 
+  // Local model state
+  const [hasLocalModel, setHasLocalModel] = useState(false);
+  const [isDownloadingModel, setIsDownloadingModel] = useState(false);
+  const [modelDownloadProgress, setModelDownloadProgress] = useState({
+    progress: 0,
+    speed: 0,
+    downloaded: 0,
+    total: 0,
+  });
+  const [modelDownloadError, setModelDownloadError] = useState<string | null>(null);
+  const [localModelPath, setLocalModelPath] = useState("");
+
   // Updater State
   const [currentVersion, setCurrentVersion] = useState("0.1.0");
   const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "available" | "downloading" | "installing" | "up-to-date" | "error">("idle");
@@ -102,6 +114,74 @@ export default function Settings() {
 
     return () => {
       unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, []);
+
+  const checkLocalModel = async () => {
+    try {
+      const exists = await invoke<boolean>("check_local_model");
+      setHasLocalModel(exists);
+      const path = await invoke<string>("get_local_model_path");
+      setLocalModelPath(path);
+    } catch (err) {
+      console.error("Failed to check local model:", err);
+    }
+  };
+
+  const handleStartDownload = async () => {
+    try {
+      setModelDownloadError(null);
+      setIsDownloadingModel(true);
+      await invoke("download_local_model");
+    } catch (err: any) {
+      setIsDownloadingModel(false);
+      setModelDownloadError(err.toString());
+    }
+  };
+
+  const handleCancelDownload = async () => {
+    try {
+      await invoke("cancel_local_model_download");
+    } catch (err) {
+      console.error("Failed to cancel download:", err);
+    }
+  };
+
+  useEffect(() => {
+    checkLocalModel();
+
+    let unlistenProgress: any;
+    let unlistenComplete: any;
+    let unlistenCancelled: any;
+    let unlistenError: any;
+
+    const setupListeners = async () => {
+      unlistenProgress = await listen<any>("local-model-download-progress", (event) => {
+        setIsDownloadingModel(true);
+        setModelDownloadProgress(event.payload);
+      });
+      unlistenComplete = await listen("local-model-download-complete", () => {
+        setIsDownloadingModel(false);
+        setHasLocalModel(true);
+        showTemporaryStatus("Local model downloaded successfully!");
+      });
+      unlistenCancelled = await listen("local-model-download-cancelled", () => {
+        setIsDownloadingModel(false);
+        showTemporaryStatus("Model download cancelled.");
+      });
+      unlistenError = await listen<string>("local-model-download-error", (event) => {
+        setIsDownloadingModel(false);
+        setModelDownloadError(event.payload);
+      });
+    };
+
+    setupListeners();
+
+    return () => {
+      if (unlistenProgress) unlistenProgress();
+      if (unlistenComplete) unlistenComplete();
+      if (unlistenCancelled) unlistenCancelled();
+      if (unlistenError) unlistenError();
     };
   }, []);
 
@@ -506,9 +586,16 @@ export default function Settings() {
                     <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Active LLM Provider</label>
                     <select
                       value={draftConfig.active_provider}
-                      onChange={(e) => updateDraftField("active_provider", e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        updateDraftField("active_provider", val);
+                        if (val === "local") {
+                          checkLocalModel();
+                        }
+                      }}
                       className="w-full bg-slate-100 border border-slate-300/80 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-[#23282f]"
                     >
+                      <option value="local">Built-In Polisher (Local Offline)</option>
                       <option value="gemini">Google Gemini</option>
                       <option value="openai">OpenAI</option>
                       <option value="anthropic">Anthropic Claude</option>
@@ -517,6 +604,83 @@ export default function Settings() {
                       <option value="openrouter">OpenRouter</option>
                     </select>
                   </div>
+
+                  {draftConfig.active_provider === "local" && (
+                    <div className="col-span-2 bg-slate-100 border border-slate-300/60 rounded-xl p-4.5 space-y-3.5 mt-1">
+                      <div className="flex justify-between items-center">
+                        <div className="space-y-1">
+                          <h4 className="text-xs font-bold text-[#23282f] tracking-wide uppercase">Built-In Model Status</h4>
+                          <p className="text-[10px] text-slate-500 leading-normal max-w-md">
+                            Offline polishing uses a highly-optimized Llama-3.2-1B model (~700MB) downloaded directly to your machine. No internet or API keys are required once setup.
+                          </p>
+                        </div>
+                        {hasLocalModel ? (
+                          <span className="bg-[#23282f] text-[#e8ff00] text-[9px] font-bold px-3 py-1 rounded-full border border-[#23282f]/20 uppercase">
+                            Ready (Offline)
+                          </span>
+                        ) : (
+                          <span className="bg-slate-300 text-slate-600 text-[9px] font-bold px-3 py-1 rounded-full uppercase">
+                            Not Installed
+                          </span>
+                        )}
+                      </div>
+
+                      {isDownloadingModel ? (
+                        <div className="space-y-2.5 pt-2">
+                          <div className="flex justify-between text-[10px] font-bold text-slate-700">
+                            <span>Downloading Llama-3.2-1B ({modelDownloadProgress.progress.toFixed(1)}%)</span>
+                            <span>{modelDownloadProgress.speed.toFixed(1)} MB/s</span>
+                          </div>
+                          <div className="w-full bg-slate-300 h-2 rounded-full overflow-hidden">
+                            <div 
+                              className="bg-[#23282f] h-full rounded-full transition-all duration-150"
+                              style={{ width: `${modelDownloadProgress.progress}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between items-center text-[9px] text-slate-500 font-bold">
+                            <span>{modelDownloadProgress.downloaded.toFixed(1)} MB / {modelDownloadProgress.total.toFixed(1)} MB</span>
+                            <button
+                              type="button"
+                              onClick={handleCancelDownload}
+                              className="text-red-600 hover:text-red-800 transition-colors uppercase cursor-pointer"
+                            >
+                              Cancel Download
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-2 pt-2">
+                          {modelDownloadError && (
+                            <div className="text-[10px] text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5 font-bold">
+                              Error downloading model: {modelDownloadError}
+                            </div>
+                          )}
+                          {!hasLocalModel && (
+                            <button
+                              type="button"
+                              onClick={handleStartDownload}
+                              className="w-full py-2 bg-[#23282f] hover:bg-[#343b45] text-[#e8ff00] text-xs font-bold rounded-lg transition-colors shadow-sm text-center cursor-pointer"
+                            >
+                              Download Local Model (700MB)
+                            </button>
+                          )}
+                          {hasLocalModel && (
+                            <div className="text-[10px] text-slate-600 font-semibold flex items-center gap-1.5">
+                              <span className="text-emerald-600 text-xs">✓</span> Local model is successfully installed and ready for offline polishing.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {localModelPath && (
+                        <div className="pt-2.5 border-t border-slate-300/40 text-[10px] text-slate-500 font-bold space-y-1">
+                          <span className="uppercase text-[9px] tracking-wider text-slate-400">Model Storage Path</span>
+                          <div className="bg-slate-200/60 border border-slate-300/40 px-2.5 py-1.5 rounded-lg select-text break-all font-mono text-[9px] text-slate-700">
+                            {localModelPath}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {draftConfig.active_provider === "gemini" && (
                     <div className="space-y-1.5">

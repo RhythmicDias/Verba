@@ -23,6 +23,8 @@
 
 - **Global Hotkey Activation**: Quickly select any text, press the hotkey (default: `Ctrl+Alt+P`), and watch it load in the Verba popup.
 - **AI Text Polishing**: Integrate with top-tier AI LLM providers to clean up grammar, tone, style, or translate text.
+- **Local Offline Inference**: Run text polishing completely offline using the lightweight `Llama-3.2-1B-Instruct` model powered by a built-in `llama-completion` sidecar. No API keys or internet connection required!
+- **Local Model Downloader**: In-app panel to trigger, track, and cancel model downloads from HuggingFace with live download speeds and progress indicators.
 - **Auto-Paste Back**: Seamlessly writes polished text back to your clipboard and injects it back into your active window.
 - **Clipboard Preservation**: Backs up and restores your pre-existing clipboard contents automatically, preventing pollution of your copy/paste queue.
 - **Keyboard Safety Validation**: Dynamically detects physical keystrokes and waits for hotkey releases before executing `Ctrl+C`, preventing selection replacement bugs (e.g. typing a literal 'c' instead of copying).
@@ -31,9 +33,21 @@
 - **Polishing History**: Keep track of previously edited texts for easy reference and reuse.
 - **Secure Storage**: Safe handling of API keys using system-native keyring storage via Rust.
 
+## 🤖 Local Offline Inference Setup
+
+Verba supports 100% local, offline text polishing. To use this feature:
+
+1. **Get the Executables**: Download the `llama-completion` executables and dynamic libraries (`.dll`/`.so`/`.dylib`) from the `llama.cpp` releases.
+2. **Place Executables & DLLs**:
+   - For compilation and bundling, place a renamed binary `llama-completion-<target-triple>.exe` in the [src-tauri/binaries](file:///d:/PythonProjects/Verba/src-tauri/binaries) directory.
+   - For active development/runtime, place the dynamic libraries (`llama.dll`, `ggml.dll`, `ggml-cpu-*.dll`, etc.) and `llama-completion.exe` in the active build folder (e.g., [src-tauri/target/debug](file:///d:/PythonProjects/Verba/src-tauri/target/debug) or the production installation folder).
+3. **Download the Model**: Launch Verba, go to **Settings**, select the **Local** provider, and click **Download Model** to fetch the 800MB `Llama-3.2-1B-Instruct-Q4_K_M.gguf` model file directly.
+4. **Trigger Polishing**: Highlight any text, press your hotkey, select **Generative** (or any local prompt), and watch it polish instantly offline without calling any external APIs.
+
 ## 🛠️ Tech Stack
 
 - **Desktop Framework**: [Tauri v2](https://tauri.app/) (Rust backend)
+- **Local LLM Engine**: [llama.cpp](https://github.com/ggerganov/llama.cpp) via `llama-completion` sidecar
 - **Frontend library**: [React](https://react.dev/) with [Vite](https://vite.dev/)
 - **Programming Languages**: Rust (Core Logic), TypeScript (UI & Application orchestration)
 - **Security**: System Keychain (`keyring-rs`) for API key protection

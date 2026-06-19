@@ -140,7 +140,7 @@ export default function Popup() {
       const activeProvider = freshConfig.active_provider;
       const hasKey: boolean = await invoke("has_api_key", { provider: activeProvider });
       
-      if (!hasKey && activeProvider !== "ollama") {
+      if (!hasKey && activeProvider !== "ollama" && activeProvider !== "local") {
         throw new Error(`API key for ${activeProvider} is missing.`);
       }
 
@@ -175,7 +175,8 @@ export default function Popup() {
       // Write back to clipboard and paste
       await invoke("paste_and_close", { text: polished });
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      const errorMsg = typeof err === "string" ? err : err.message || "An unexpected error occurred.";
+      setError(errorMsg);
       setIsLoading(false); // only stop loading on error, success hides popup automatically
     }
   };

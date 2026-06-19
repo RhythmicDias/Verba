@@ -1,6 +1,7 @@
 mod clipboard;
 mod storage;
 mod llm;
+mod llama;
 
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
@@ -272,7 +273,11 @@ pub fn run() {
             close_popup,
             update_global_shortcut,
             llm::call_llm,
-            llm::get_ollama_models
+            llm::get_ollama_models,
+            llama::check_local_model,
+            llama::download_local_model,
+            llama::cancel_local_model_download,
+            llama::get_local_model_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

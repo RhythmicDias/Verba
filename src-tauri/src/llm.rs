@@ -59,13 +59,16 @@ fn clean_output(text: &str, style: &str) -> String {
 
 #[tauri::command]
 pub async fn call_llm(
+    app_handle: tauri::AppHandle,
     text: String,
     style: String,
     custom_prompt: Option<String>,
     config: LLMConfig,
 ) -> Result<String, String> {
     let active_provider = config.provider.to_lowercase();
-    let api_key = if active_provider == "ollama" {
+    let api_key = if active_provider == "local" {
+        "".to_string()
+    } else if active_provider == "ollama" {
         storage::get_api_key(&active_provider).unwrap_or_default()
     } else {
         storage::get_api_key(&active_provider)
@@ -129,6 +132,9 @@ pub async fn call_llm(
     let client = reqwest::Client::new();
 
     let result_text = match active_provider.as_str() {
+        "local" => {
+            crate::llama::run_local_inference(&app_handle, &system_message, &user_message)?
+        }
         "gemini" => {
             let model = config.model.as_deref().unwrap_or("gemini-1.5-flash");
             let url = format!(
