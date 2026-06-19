@@ -313,6 +313,7 @@ pub fn run_local_inference(
     cmd.arg("-p").arg(&formatted_prompt)
         .arg("-n").arg("12000")
         .arg("--temp").arg("0.3")
+        .arg("--repeat-penalty").arg("1.1")
         .arg("-no-cnv")
         .arg("--simple-io");
 
