@@ -30,6 +30,7 @@ interface AppConfig {
   ollama_endpoint: string;
   openrouter_model: string;
   openrouter_endpoint: string;
+  style_shortcuts?: Record<string, string>;
 }
 
 const STYLE_OPTIONS = [
@@ -48,8 +49,15 @@ export default function Popup() {
   const [customPrompt, setCustomPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [shortcuts, setShortcuts] = useState<Record<string, string>>({});
+  
   const isMouseDownRef = useRef(false);
+  const shortcutsRef = useRef<Record<string, string>>({});
+  const handlePolishRef = useRef<any>(null);
+
+  useEffect(() => {
+    shortcutsRef.current = shortcuts;
+  }, [shortcuts]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
@@ -65,6 +73,19 @@ export default function Popup() {
 
   // Load state and copied text when window opens
   useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config: AppConfig = await invoke("get_app_config");
+        if (config && config.style_shortcuts) {
+          setShortcuts(config.style_shortcuts);
+        }
+      } catch (err) {
+        console.error("Failed to load configuration in popup:", err);
+      }
+    };
+
+    loadConfig();
+
     // Listen for custom update-selection event
     const unlistenPromise = listen<string>("update-selection", (event) => {
       setCopiedText(event.payload);
@@ -90,10 +111,36 @@ export default function Popup() {
       }
     }, 200);
 
-    // Escape listener to close popup
+    // Escape listener and custom style shortcuts listener
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         invoke("close_popup");
+        return;
+      }
+
+      const activeTag = document.activeElement?.tagName;
+      if (activeTag === "INPUT" || activeTag === "TEXTAREA") {
+        return;
+      }
+
+      const pressedKey = e.key.toLowerCase();
+      const currentShortcuts = shortcutsRef.current;
+      const styleId = Object.keys(currentShortcuts).find(
+        (key) => currentShortcuts[key]?.toLowerCase() === pressedKey
+      );
+
+      if (styleId) {
+        e.preventDefault();
+        if (styleId === "custom") {
+          const inputEl = document.querySelector("input[placeholder^='Custom instruction']") as HTMLInputElement;
+          if (inputEl) {
+            inputEl.focus();
+          }
+        } else {
+          if (handlePolishRef.current) {
+            handlePolishRef.current(styleId, false);
+          }
+        }
       }
     };
 
@@ -101,6 +148,7 @@ export default function Popup() {
     const handleFocus = () => {
       setError(null);
       setIsLoading(false);
+      loadConfig();
     };
 
     const handleMouseUp = () => {
@@ -181,6 +229,10 @@ export default function Popup() {
     }
   };
 
+  useEffect(() => {
+    handlePolishRef.current = handlePolish;
+  }, [handlePolish]);
+
   return (
     <div 
       onMouseDown={handleMouseDown}
@@ -247,6 +299,7 @@ export default function Popup() {
             <div className="grid grid-cols-2 gap-2 mb-2.5">
               {STYLE_OPTIONS.map((style) => {
                 const IconComponent = style.icon;
+                const shortcut = shortcuts[style.id];
                 return (
                   <button
                     key={style.id}
@@ -256,6 +309,11 @@ export default function Popup() {
                   >
                     <IconComponent size={13} className="shrink-0 text-[#e8ff00]" />
                     <span className="truncate">{style.name}</span>
+                    {shortcut && (
+                      <span className="ml-auto text-[8px] text-slate-400 font-medium px-1.5 py-0.2 bg-slate-800/80 rounded-full border border-slate-700/60 uppercase shrink-0">
+                        {shortcut}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -273,7 +331,7 @@ export default function Popup() {
             >
               <input
                 type="text"
-                placeholder="Custom instruction..."
+                placeholder={shortcuts["custom"] ? `Custom instruction... (Key: ${shortcuts["custom"]})` : "Custom instruction..."}
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 disabled={isLoading}

@@ -28,6 +28,18 @@ interface HistoryEntry {
   style: string;
 }
 
+const STYLE_NAMES: Record<string, string> = {
+  concise: "Concise",
+  professional: "Professional",
+  detailed: "Detailed",
+  formal: "Formal",
+  funny: "Funny",
+  medical: "Medical",
+  summarize: "Summarize",
+  generative: "Generative",
+  custom: "Custom Focus",
+};
+
 interface AppConfig {
   hotkey: string;
   active_provider: string;
@@ -42,6 +54,7 @@ interface AppConfig {
   openrouter_endpoint: string;
   save_history: boolean;
   history: HistoryEntry[];
+  style_shortcuts?: Record<string, string>;
 }
 
 type TabType = "keys" | "preferences" | "history" | "update";
@@ -829,6 +842,48 @@ export default function Settings() {
                     onChange={(e) => updateDraftField("save_history", e.target.checked)}
                     className="w-4 h-4 text-[#23282f] border-slate-300 rounded focus:ring-[#23282f]"
                   />
+                </div>
+              </div>
+
+              {/* Style Shortcuts Settings */}
+              <div className="bg-[#eaecef] border border-[#d2d5db]/80 rounded-2xl p-5 space-y-4 shadow-sm">
+                <h3 className="text-xs font-bold text-[#23282f] tracking-wide uppercase flex items-center gap-2">
+                  <Keyboard size={16} /> Style Keyboard Shortcuts
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Assign a single-character key (letter, number, or symbol) to quickly trigger options when the popup is visible. Keys are ignored when typing in the custom instruction input.
+                </p>
+                <div className="grid grid-cols-3 gap-4">
+                  {Object.keys(STYLE_NAMES).map((styleId) => {
+                    const shortcut = draftConfig?.style_shortcuts?.[styleId] || "";
+                    return (
+                      <div key={styleId} className="space-y-1.5">
+                        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block truncate">
+                          {STYLE_NAMES[styleId]}
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={1}
+                          value={shortcut}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const newShortcuts = { 
+                              ...(draftConfig?.style_shortcuts || {}), 
+                              [styleId]: val 
+                            };
+                            setDraftConfig(prev => {
+                              if (!prev) return null;
+                              return {
+                                ...prev,
+                                style_shortcuts: newShortcuts
+                              };
+                            });
+                          }}
+                          className="w-full bg-slate-100 border border-slate-300/80 rounded-lg px-3 py-1.5 text-xs text-slate-800 font-bold text-center uppercase focus:outline-none focus:border-[#23282f]"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

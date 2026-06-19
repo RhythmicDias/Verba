@@ -18,6 +18,20 @@ pub struct HistoryEntry {
     pub style: String,
 }
 
+fn default_shortcuts() -> std::collections::HashMap<String, String> {
+    [
+        ("concise".to_string(), "1".to_string()),
+        ("professional".to_string(), "2".to_string()),
+        ("detailed".to_string(), "3".to_string()),
+        ("formal".to_string(), "4".to_string()),
+        ("funny".to_string(), "5".to_string()),
+        ("medical".to_string(), "6".to_string()),
+        ("summarize".to_string(), "7".to_string()),
+        ("generative".to_string(), "8".to_string()),
+        ("custom".to_string(), "0".to_string()),
+    ].into_iter().collect()
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AppConfig {
     pub hotkey: String,
@@ -33,6 +47,8 @@ pub struct AppConfig {
     pub openrouter_endpoint: String,
     pub save_history: bool,
     pub history: Vec<HistoryEntry>,
+    #[serde(default = "default_shortcuts")]
+    pub style_shortcuts: std::collections::HashMap<String, String>,
 }
 
 impl Default for AppConfig {
@@ -51,6 +67,7 @@ impl Default for AppConfig {
             openrouter_endpoint: "https://openrouter.ai/api/v1/chat/completions".to_string(),
             save_history: true,
             history: Vec::new(),
+            style_shortcuts: default_shortcuts(),
         }
     }
 }
