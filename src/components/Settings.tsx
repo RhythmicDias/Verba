@@ -48,6 +48,7 @@ interface AppConfig {
   openai_endpoint: string;
   anthropic_model: string;
   grok_model: string;
+  groq_model: string;
   ollama_model: string;
   ollama_endpoint: string;
   openrouter_model: string;
@@ -73,6 +74,7 @@ export default function Settings() {
     openai: false,
     anthropic: false,
     grok: false,
+    groq: false,
     openrouter: false,
   });
   
@@ -81,6 +83,7 @@ export default function Settings() {
     openai: "",
     anthropic: "",
     grok: "",
+    groq: "",
     openrouter: "",
   });
   
@@ -290,7 +293,7 @@ export default function Settings() {
       setDraftConfig(JSON.parse(JSON.stringify(conf))); // deep clone draft
 
       // Check which keys are stored in keyring
-      const checkProviders = ["gemini", "openai", "anthropic", "grok", "openrouter"];
+      const checkProviders = ["gemini", "openai", "anthropic", "grok", "groq", "openrouter"];
       const configuredStatus: Record<string, boolean> = {};
       for (const p of checkProviders) {
         const val: boolean = await invoke("has_api_key", { provider: p });
@@ -540,7 +543,7 @@ export default function Settings() {
                 Configure your LLM model provider API keys. Keys are saved securely inside the OS native credential store (Windows Credential Manager) and never written in plaintext configuration files.
               </p>
 
-              {["Gemini", "OpenAI", "Anthropic", "Grok", "OpenRouter"].map((provider) => {
+              {["Gemini", "OpenAI", "Anthropic", "Grok", "Groq", "OpenRouter"].map((provider) => {
                 const lower = provider.toLowerCase();
                 const isConfigured = keysConfigured[lower];
                 return (
@@ -624,6 +627,7 @@ export default function Settings() {
                       <option value="openai">OpenAI</option>
                       <option value="anthropic">Anthropic Claude</option>
                       <option value="grok">xAI Grok</option>
+                      <option value="groq">Groq LPU</option>
                       <option value="ollama">Ollama (Local)</option>
                       <option value="openrouter">OpenRouter</option>
                     </select>
@@ -779,6 +783,18 @@ export default function Settings() {
                         type="text"
                         value={draftConfig.grok_model}
                         onChange={(e) => updateDraftField("grok_model", e.target.value)}
+                        className="w-full bg-slate-100 border border-slate-300/80 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#23282f]"
+                      />
+                    </div>
+                  )}
+
+                  {draftConfig.active_provider === "groq" && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Groq Model</label>
+                      <input
+                        type="text"
+                        value={draftConfig.groq_model}
+                        onChange={(e) => updateDraftField("groq_model", e.target.value)}
                         className="w-full bg-slate-100 border border-slate-300/80 rounded-lg px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-[#23282f]"
                       />
                     </div>

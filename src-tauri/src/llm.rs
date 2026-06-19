@@ -272,6 +272,42 @@ pub async fn call_llm(
                 .to_string()
         }
 
+        "groq" => {
+            let model = config.model.as_deref().unwrap_or("llama-3.3-70b-versatile");
+            let url = "https://api.groq.com/openai/v1/chat/completions";
+
+            let payload = serde_json::json!({
+                "model": model,
+                "messages": [
+                    { "role": "system", "content": system_message },
+                    { "role": "user", "content": user_message }
+                ],
+                "temperature": 0.2
+            });
+
+            let res = client.post(url)
+                .header("Authorization", format!("Bearer {}", api_key))
+                .json(&payload)
+                .send()
+                .await
+                .map_err(|e| format!("Groq request failed: {}", e))?;
+
+            if !res.status().is_success() {
+                let status = res.status();
+                let err_text = res.text().await.unwrap_or_default();
+                return Err(format!("Groq Error ({}): {}", status, err_text));
+            }
+
+            let data: serde_json::Value = res.json()
+                .await
+                .map_err(|e| format!("Failed to parse Groq response: {}", e))?;
+
+            data["choices"][0]["message"]["content"]
+                .as_str()
+                .ok_or_else(|| "Invalid response structure from Groq API".to_string())?
+                .to_string()
+        }
+
         "anthropic" => {
             let model = config.model.as_deref().unwrap_or("claude-3-5-sonnet-20241022");
             let url = "https://api.anthropic.com/v1/messages";

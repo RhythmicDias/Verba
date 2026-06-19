@@ -26,6 +26,7 @@ interface AppConfig {
   openai_endpoint: string;
   anthropic_model: string;
   grok_model: string;
+  groq_model: string;
   ollama_model: string;
   ollama_endpoint: string;
   openrouter_model: string;
@@ -198,6 +199,7 @@ export default function Popup() {
                activeProvider === "openai" ? freshConfig.openai_model :
                activeProvider === "anthropic" ? freshConfig.anthropic_model :
                activeProvider === "grok" ? freshConfig.grok_model :
+               activeProvider === "groq" ? freshConfig.groq_model :
                activeProvider === "openrouter" ? freshConfig.openrouter_model :
                freshConfig.ollama_model,
         customEndpoint: activeProvider === "openai" ? freshConfig.openai_endpoint :

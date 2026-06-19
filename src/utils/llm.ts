@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
 export interface LLMConfig {
-  provider: "gemini" | "openai" | "anthropic" | "ollama" | "grok" | "openrouter" | "local";
+  provider: "gemini" | "openai" | "anthropic" | "ollama" | "grok" | "groq" | "openrouter" | "local";
   model?: string;
   customEndpoint?: string;
 }
