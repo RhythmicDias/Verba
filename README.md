@@ -1,17 +1,18 @@
-# 📝 Verba
-
 <div align="center">
+  <img src="src-tauri/icons/icon.png" alt="Verba Logo" width="128" height="128" />
 
-[![GitHub License](https://img.shields.io/github/license/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=8b5cf6)](https://github.com/RhythmicDias/Verba/blob/main/LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=3b82f6)](https://github.com/RhythmicDias/Verba/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=f43f5e)](https://github.com/RhythmicDias/Verba/issues)
-[![GitHub Repo Size](https://img.shields.io/github/repo-size/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=10b981)](https://github.com/RhythmicDias/Verba)
+  # Verba
 
-[![Rust](https://img.shields.io/badge/Rust-1.94+-black?style=for-the-badge&logo=rust&logoColor=white&labelColor=1e1e2e)](https://www.rust-lang.org/)
-[![Tauri](https://img.shields.io/badge/Tauri-v2-FFC131?style=for-the-badge&logo=tauri&logoColor=white&labelColor=1e1e2e)](https://tauri.app/)
-[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black&labelColor=1e1e2e)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white&labelColor=1e1e2e)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-6+-646CFF?style=for-the-badge&logo=vite&logoColor=white&labelColor=1e1e2e)](https://vite.dev/)
+  [![GitHub License](https://img.shields.io/github/license/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=8b5cf6)](https://github.com/RhythmicDias/Verba/blob/main/LICENSE)
+  [![GitHub Stars](https://img.shields.io/github/stars/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=3b82f6)](https://github.com/RhythmicDias/Verba/stargazers)
+  [![GitHub Issues](https://img.shields.io/github/issues/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=f43f5e)](https://github.com/RhythmicDias/Verba/issues)
+  [![GitHub Repo Size](https://img.shields.io/github/repo-size/RhythmicDias/Verba?style=for-the-badge&labelColor=1e1e2e&color=10b981)](https://github.com/RhythmicDias/Verba)
+
+  [![Rust](https://img.shields.io/badge/Rust-1.94+-black?style=for-the-badge&logo=rust&logoColor=white&labelColor=1e1e2e)](https://www.rust-lang.org/)
+  [![Tauri](https://img.shields.io/badge/Tauri-v2-FFC131?style=for-the-badge&logo=tauri&logoColor=white&labelColor=1e1e2e)](https://tauri.app/)
+  [![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black&labelColor=1e1e2e)](https://react.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white&labelColor=1e1e2e)](https://www.typescriptlang.org/)
+  [![Vite](https://img.shields.io/badge/Vite-6+-646CFF?style=for-the-badge&logo=vite&logoColor=white&labelColor=1e1e2e)](https://vite.dev/)
 
 </div>
 
