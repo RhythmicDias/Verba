@@ -87,7 +87,23 @@ pub async fn call_llm(
         "CRITICAL: Do NOT use any emojis or emoticons under any circumstances."
     };
 
-    let (system_message, user_message) = if style == "generative" {
+    let (system_message, user_message) = if text.trim().is_empty() {
+        (
+            format!(
+                "You are a creative generative AI assistant. Your task is to generate high-quality content based on the provided instructions.\n\n\
+                 CRITICAL CONSTRAINTS (Violating these will break the application layout):\n\
+                 - Output ONLY the generated content itself. Do NOT write any introductory remarks, conversational filler (e.g., \"Sure, here is...\"), explanations, notes, or wrap the response in quotes. Do NOT be chatty.\n\
+                 - DO NOT use any markdown formatting (e.g., '**' for bold, '*' for italics, '#' for headers). Output raw, completely plain text.\n\
+                 - DO NOT use double-dashes ('--') or em-dashes ('—'). Use standard punctuation (e.g., single dashes or commas) instead.\n\
+                 - {}",
+                emoji_rule
+            ),
+            format!(
+                "<instructions>\n{}\n</instructions>",
+                base_instruction
+            )
+        )
+    } else if style == "generative" {
         (
             format!(
                 "You are a creative generative AI assistant. Your task is to generate high-quality content based on the provided instructions and context.\n\n\

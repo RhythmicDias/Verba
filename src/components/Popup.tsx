@@ -129,7 +129,7 @@ export default function Popup() {
   }, []);
 
   const handlePolish = async (styleId: string, isCustom = false) => {
-    if (!copiedText || isLoading) return;
+    if ((!copiedText && !isCustom) || isLoading) return;
     setIsLoading(true);
     setError(null);
 
@@ -276,12 +276,12 @@ export default function Popup() {
                 placeholder="Custom instruction..."
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
-                disabled={!copiedText}
+                disabled={isLoading}
                 className="w-full bg-[#1b1f24] border border-slate-700/50 rounded-full py-1.5 pl-4 pr-9 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#e8ff00]/40 transition-colors"
               />
               <button
                 type="submit"
-                disabled={!customPrompt.trim() || !copiedText}
+                disabled={!customPrompt.trim() || isLoading}
                 className="absolute right-3 text-slate-500 hover:text-[#e8ff00] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CornerDownLeft size={14} />
