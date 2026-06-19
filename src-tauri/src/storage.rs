@@ -32,6 +32,10 @@ fn default_shortcuts() -> std::collections::HashMap<String, String> {
     ].into_iter().collect()
 }
 
+fn default_use_gpu() -> bool {
+    true
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AppConfig {
     pub hotkey: String,
@@ -49,12 +53,20 @@ pub struct AppConfig {
     pub history: Vec<HistoryEntry>,
     #[serde(default = "default_shortcuts")]
     pub style_shortcuts: std::collections::HashMap<String, String>,
+    #[serde(default = "default_use_gpu")]
+    pub use_gpu: bool,
 }
 
 impl Default for AppConfig {
     fn default() -> Self {
+        let default_hotkey = if cfg!(target_os = "macos") {
+            "Cmd+Alt+P".to_string()
+        } else {
+            "Ctrl+Alt+P".to_string()
+        };
+
         Self {
-            hotkey: "Ctrl+Alt+P".to_string(),
+            hotkey: default_hotkey,
             active_provider: "gemini".to_string(),
             gemini_model: "gemini-1.5-flash".to_string(),
             openai_model: "gpt-4o-mini".to_string(),
@@ -68,6 +80,7 @@ impl Default for AppConfig {
             save_history: true,
             history: Vec::new(),
             style_shortcuts: default_shortcuts(),
+            use_gpu: true,
         }
     }
 }
@@ -108,13 +121,29 @@ fn get_config_path(app_handle: &tauri::AppHandle) -> Option<PathBuf> {
     Some(path)
 }
 
+/// Remove history entries older than 30 days.
+fn prune_expired_history(history: &mut Vec<HistoryEntry>) {
+    let cutoff = Utc::now() - chrono::Duration::days(30);
+    history.retain(|entry| {
+        chrono::DateTime::parse_from_rfc3339(&entry.timestamp)
+            .map(|ts| ts >= cutoff)
+            .unwrap_or(true) // keep entries with unparseable timestamps
+    });
+}
+
 pub fn get_config(app_handle: &tauri::AppHandle) -> AppConfig {
     if let Some(path) = get_config_path(app_handle) {
         if path.exists() {
             if let Ok(mut file) = File::open(&path) {
                 let mut content = String::new();
                 if file.read_to_string(&mut content).is_ok() {
-                    if let Ok(config) = serde_json::from_str::<AppConfig>(&content) {
+                    if let Ok(mut config) = serde_json::from_str::<AppConfig>(&content) {
+                        let before_len = config.history.len();
+                        prune_expired_history(&mut config.history);
+                        // Persist pruned config if any entries were removed
+                        if config.history.len() != before_len {
+                            let _ = save_config_inner(&path, &config);
+                        }
                         return config;
                     }
                 }
@@ -124,10 +153,7 @@ pub fn get_config(app_handle: &tauri::AppHandle) -> AppConfig {
     AppConfig::default()
 }
 
-pub fn save_config(app_handle: &tauri::AppHandle, config: &AppConfig) -> Result<(), String> {
-    let path = get_config_path(app_handle)
-        .ok_or_else(|| "Failed to get app configuration path".to_string())?;
-    
+fn save_config_inner(path: &std::path::Path, config: &AppConfig) -> Result<(), String> {
     let content = serde_json::to_string_pretty(config)
         .map_err(|e| format!("Failed to serialize config: {}", e))?;
     
@@ -138,6 +164,12 @@ pub fn save_config(app_handle: &tauri::AppHandle, config: &AppConfig) -> Result<
         .map_err(|e| format!("Failed to write config file: {}", e))?;
     
     Ok(())
+}
+
+pub fn save_config(app_handle: &tauri::AppHandle, config: &AppConfig) -> Result<(), String> {
+    let path = get_config_path(app_handle)
+        .ok_or_else(|| "Failed to get app configuration path".to_string())?;
+    save_config_inner(&path, config)
 }
 
 pub fn add_history_entry(
@@ -158,7 +190,8 @@ pub fn add_history_entry(
     };
     if config.save_history {
         config.history.insert(0, entry.clone());
-        // Keep max 100 history entries
+        // Prune expired entries and cap at 100
+        prune_expired_history(&mut config.history);
         if config.history.len() > 100 {
             config.history.truncate(100);
         }

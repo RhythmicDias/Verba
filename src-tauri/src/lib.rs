@@ -52,7 +52,7 @@ fn add_history(
 
 #[tauri::command]
 fn get_copied_text(state: tauri::State<'_, AppState>) -> String {
-    let text = state.copied_text.lock().unwrap();
+    let text = state.copied_text.lock().unwrap_or_else(|e| e.into_inner());
     text.clone()
 }
 
@@ -77,7 +77,7 @@ fn paste_and_close(
     std::thread::sleep(std::time::Duration::from_millis(150));
 
     // Restore original backed up clipboard content
-    if let Some(ref val) = *state.clipboard_backup.lock().unwrap() {
+    if let Some(ref val) = *state.clipboard_backup.lock().unwrap_or_else(|e| e.into_inner()) {
         let _ = app_handle.clipboard().write_text(val.clone());
     }
 
@@ -93,6 +93,7 @@ fn close_popup(app_handle: AppHandle) -> Result<(), String> {
 }
 
 fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
+    #[cfg(debug_assertions)]
     println!("Global hotkey triggered! Starting copy simulation...");
 
     let state = app_handle.state::<AppState>();
@@ -119,6 +120,7 @@ fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
         if let Ok(text) = app_handle.clipboard().read_text() {
             if !text.is_empty() {
                 copied = text;
+                #[cfg(debug_assertions)]
                 println!("Success: Copied text on poll iteration {}: '{}'", i, copied);
                 break;
             }
@@ -126,11 +128,12 @@ fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
     }
 
     // Restore the backed-up clipboard content immediately so clipboard is clean during edit/process
-    if let Some(ref val) = *state.clipboard_backup.lock().unwrap() {
+    if let Some(ref val) = *state.clipboard_backup.lock().unwrap_or_else(|e| e.into_inner()) {
         let _ = app_handle.clipboard().write_text(val.clone());
     }
 
     if copied.is_empty() {
+        #[cfg(debug_assertions)]
         println!("Warning: Clipboard copy simulation resulted in empty text.");
     }
 
@@ -277,7 +280,8 @@ pub fn run() {
             llama::check_local_model,
             llama::download_local_model,
             llama::cancel_local_model_download,
-            llama::get_local_model_path
+            llama::get_local_model_path,
+            llama::is_gpu_detected
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

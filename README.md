@@ -48,6 +48,21 @@ Verba supports 100% local, offline text polishing. To use this feature:
 3. **Download the Model**: Launch Verba, go to **Settings**, select the **Local** provider, and click **Download Model** to fetch the 800MB `Llama-3.2-1B-Instruct-Q4_K_M.gguf` model file directly.
 4. **Trigger Polishing**: Highlight any text, press your hotkey, select **Generative** (or any local prompt), and watch it polish instantly offline without calling any external APIs.
 
+## 🍏 macOS Compatibility & Setup
+
+Verba is fully compatible with macOS (both Apple Silicon/M1/M2/M3 and Intel chips). Follow these setup requirements:
+
+1. **Global Hotkey**: The default global trigger hotkey on macOS is **`Cmd+Alt+P`** (compared to `Ctrl+Alt+P` on Windows).
+2. **Accessibility Permissions**:
+   - Because Verba simulates key presses (`Cmd+C` and `Cmd+V`) via AppleScript to capture and paste text automatically, macOS requires **Accessibility Permissions**.
+   - Upon first trigger, macOS will prompt you. Go to `System Settings -> Privacy & Security -> Accessibility` and ensure **Verba** is checked/enabled.
+   - If keystroke emulation fails to paste, toggle the permission off and back on.
+3. **Local Offline Inference Setup (macOS)**:
+   - For compilation and bundling, copy the relevant `llama-completion` executable from the target macOS directory (`llama-macos-arm64` or `llama-macos-x64`) into [src-tauri/binaries/](file:///d:/PythonProjects/Verba/src-tauri/binaries) with the corresponding target triple:
+     - Apple Silicon (M1/M2/M3/M4): `llama-completion-aarch64-apple-darwin`
+     - Intel Macs: `llama-completion-x86_64-apple-darwin`
+   - Make sure you also copy the required dynamic libraries (e.g. `libllama-*.dylib`, `libggml-*.dylib`, etc.) to the same directory or system library paths as needed if running from compiled source.
+
 ## 🛠️ Tech Stack
 
 - **Desktop Framework**: [Tauri v2](https://tauri.app/) (Rust backend)

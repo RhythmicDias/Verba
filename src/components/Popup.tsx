@@ -53,7 +53,7 @@ export default function Popup() {
   
   const isMouseDownRef = useRef(false);
   const shortcutsRef = useRef<Record<string, string>>({});
-  const handlePolishRef = useRef<any>(null);
+  const handlePolishRef = useRef<((styleId: string, isCustom?: boolean) => Promise<void>) | null>(null);
 
   useEffect(() => {
     shortcutsRef.current = shortcuts;
@@ -231,7 +231,7 @@ export default function Popup() {
 
   useEffect(() => {
     handlePolishRef.current = handlePolish;
-  }, [handlePolish]);
+  }, [handlePolish, copiedText, customPrompt, isLoading]);
 
   return (
     <div 
@@ -310,7 +310,7 @@ export default function Popup() {
                     <IconComponent size={13} className="shrink-0 text-[#e8ff00]" />
                     <span className="truncate">{style.name}</span>
                     {shortcut && (
-                      <span className="ml-auto text-[8px] text-slate-400 font-medium px-1.5 py-0.2 bg-slate-800/80 rounded-full border border-slate-700/60 uppercase shrink-0">
+                      <span className="ml-auto text-[9px] text-[#e8ff00] font-bold w-4.5 h-4.5 rounded-full border border-[#e8ff00]/50 flex items-center justify-center bg-[#23282f]/30 shrink-0 select-none">
                         {shortcut}
                       </span>
                     )}
@@ -331,19 +331,26 @@ export default function Popup() {
             >
               <input
                 type="text"
-                placeholder={shortcuts["custom"] ? `Custom instruction... (Key: ${shortcuts["custom"]})` : "Custom instruction..."}
+                placeholder="Custom instruction..."
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 disabled={isLoading}
-                className="w-full bg-[#1b1f24] border border-slate-700/50 rounded-full py-1.5 pl-4 pr-9 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#e8ff00]/40 transition-colors"
+                className="w-full bg-[#1b1f24] border border-slate-700/50 rounded-full py-1.5 pl-4 pr-15 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#e8ff00]/40 transition-colors"
               />
-              <button
-                type="submit"
-                disabled={!customPrompt.trim() || isLoading}
-                className="absolute right-3 text-slate-500 hover:text-[#e8ff00] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <CornerDownLeft size={14} />
-              </button>
+              <div className="absolute right-3 flex items-center gap-2">
+                {!customPrompt && shortcuts["custom"] && (
+                  <span className="text-[9px] text-[#e8ff00] font-bold w-4.5 h-4.5 rounded-full border border-[#e8ff00]/50 flex items-center justify-center bg-[#23282f]/30 select-none">
+                    {shortcuts["custom"]}
+                  </span>
+                )}
+                <button
+                  type="submit"
+                  disabled={!customPrompt.trim() || isLoading}
+                  className="text-slate-500 hover:text-[#e8ff00] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <CornerDownLeft size={14} />
+                </button>
+              </div>
             </form>
 
             {/* Error Alert */}

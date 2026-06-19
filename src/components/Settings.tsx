@@ -55,6 +55,7 @@ interface AppConfig {
   save_history: boolean;
   history: HistoryEntry[];
   style_shortcuts?: Record<string, string>;
+  use_gpu: boolean;
 }
 
 type TabType = "keys" | "preferences" | "history" | "update";
@@ -105,6 +106,16 @@ export default function Settings() {
   });
   const [modelDownloadError, setModelDownloadError] = useState<string | null>(null);
   const [localModelPath, setLocalModelPath] = useState("");
+  const [isGpuAvailable, setIsGpuAvailable] = useState(false);
+
+  const checkGpuDetection = async () => {
+    try {
+      const detected = await invoke<boolean>("is_gpu_detected");
+      setIsGpuAvailable(detected);
+    } catch (err) {
+      console.error("Failed to detect GPU:", err);
+    }
+  };
 
   // Updater State
   const [currentVersion, setCurrentVersion] = useState("0.1.0");
@@ -113,8 +124,11 @@ export default function Settings() {
   const [updateManifest, setUpdateManifest] = useState<Update | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
 
+
+
   useEffect(() => {
     loadConfig();
+    checkGpuDetection();
 
     // Fetch current app version
     getVersion().then((v) => setCurrentVersion(v)).catch((err) => console.error("Failed to read app version", err));
@@ -176,6 +190,7 @@ export default function Settings() {
       unlistenComplete = await listen("local-model-download-complete", () => {
         setIsDownloadingModel(false);
         setHasLocalModel(true);
+        checkLocalModel();
         showTemporaryStatus("Local model downloaded successfully!");
       });
       unlistenCancelled = await listen("local-model-download-cancelled", () => {
@@ -483,10 +498,6 @@ export default function Settings() {
         <div className="mt-auto pt-6 border-t border-[#343b45]/40 text-[10px] text-slate-400 flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-[11px] font-semibold text-slate-200">
             <span>Verba v{currentVersion}</span>
-            <span className="flex items-center gap-1 text-[10px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#e8ff00]" />
-              RTX CUDA Active
-            </span>
           </div>
           <p className="text-[10px] text-slate-500">Developed by Stephen Dias</p>
         </div>
@@ -685,12 +696,31 @@ export default function Settings() {
                         </div>
                       )}
                       {localModelPath && (
-                        <div className="pt-2.5 border-t border-slate-300/40 text-[10px] text-slate-500 font-bold space-y-1">
-                          <span className="uppercase text-[9px] tracking-wider text-slate-400">Model Storage Path</span>
-                          <div className="bg-slate-200/60 border border-slate-300/40 px-2.5 py-1.5 rounded-lg select-text break-all font-mono text-[9px] text-slate-700">
-                            {localModelPath}
+                        <>
+                          <div className="pt-2.5 border-t border-slate-300/40 flex items-center justify-between">
+                            <div className="space-y-0.5">
+                              <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">GPU Acceleration (CUDA)</label>
+                              <span className="text-[9px] text-slate-400 font-medium normal-case block">
+                                {isGpuAvailable
+                                  ? "NVIDIA CUDA hardware detected. Enable for faster local offline inference."
+                                  : "No NVIDIA CUDA GPU detected. Local offline inference will run on CPU."}
+                              </span>
+                            </div>
+                            <input
+                              type="checkbox"
+                              checked={draftConfig.use_gpu}
+                              disabled={!isGpuAvailable}
+                              onChange={(e) => updateDraftField("use_gpu", e.target.checked)}
+                              className="w-4 h-4 text-[#23282f] border-slate-300 rounded focus:ring-[#23282f] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            />
                           </div>
-                        </div>
+                          <div className="pt-2.5 border-t border-slate-300/40 text-[10px] text-slate-500 font-bold space-y-1">
+                            <span className="uppercase text-[9px] tracking-wider text-slate-400">Model Storage Path</span>
+                            <div className="bg-slate-200/60 border border-slate-300/40 px-2.5 py-1.5 rounded-lg select-text break-all font-mono text-[9px] text-slate-700">
+                              {localModelPath}
+                            </div>
+                          </div>
+                        </>
                       )}
                     </div>
                   )}

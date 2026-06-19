@@ -103,6 +103,8 @@ pub fn simulate_paste() {
 
 #[cfg(target_os = "macos")]
 pub fn simulate_copy() {
+    // macOS accessibility entitlement needs a brief sleep to let the user release the trigger keys
+    std::thread::sleep(std::time::Duration::from_millis(250));
     let _ = std::process::Command::new("osascript")
         .arg("-e")
         .arg("tell application \"System Events\" to keystroke \"c\" using {command down}")
@@ -112,6 +114,8 @@ pub fn simulate_copy() {
 
 #[cfg(target_os = "macos")]
 pub fn simulate_paste() {
+    // macOS accessibility entitlement needs a brief sleep to let trigger keys release
+    std::thread::sleep(std::time::Duration::from_millis(250));
     let _ = std::process::Command::new("osascript")
         .arg("-e")
         .arg("tell application \"System Events\" to keystroke \"v\" using {command down}")

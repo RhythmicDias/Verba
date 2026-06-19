@@ -57,6 +57,15 @@ fn clean_output(text: &str, style: &str) -> String {
     cleaned.trim().to_string()
 }
 
+fn validate_endpoint_url(url: &str) -> Result<(), String> {
+    let lower = url.trim().to_lowercase();
+    if lower.starts_with("http://") || lower.starts_with("https://") {
+        Ok(())
+    } else {
+        Err(format!("Invalid endpoint URL: only http:// and https:// schemes are allowed, got: {}", url))
+    }
+}
+
 #[tauri::command]
 pub async fn call_llm(
     app_handle: tauri::AppHandle,
@@ -154,8 +163,8 @@ pub async fn call_llm(
         "gemini" => {
             let model = config.model.as_deref().unwrap_or("gemini-1.5-flash");
             let url = format!(
-                "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
-                model, api_key
+                "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent",
+                model
             );
 
             let payload = serde_json::json!({
@@ -165,6 +174,7 @@ pub async fn call_llm(
             });
 
             let res = client.post(&url)
+                .header("x-goog-api-key", &api_key)
                 .json(&payload)
                 .send()
                 .await
@@ -190,6 +200,7 @@ pub async fn call_llm(
             let model = config.model.as_deref().unwrap_or("gpt-4o-mini");
             let url = config.custom_endpoint.as_deref()
                 .unwrap_or("https://api.openai.com/v1/chat/completions");
+            validate_endpoint_url(url)?;
 
             let payload = serde_json::json!({
                 "model": model,
@@ -299,6 +310,7 @@ pub async fn call_llm(
             let model = config.model.as_deref().unwrap_or("llama3");
             let url = config.custom_endpoint.as_deref()
                 .unwrap_or("http://localhost:11434/v1/chat/completions");
+            validate_endpoint_url(url)?;
 
             let payload = serde_json::json!({
                 "model": model,
@@ -339,6 +351,7 @@ pub async fn call_llm(
             let model = config.model.as_deref().unwrap_or("google/gemini-2.5-flash");
             let url = config.custom_endpoint.as_deref()
                 .unwrap_or("https://openrouter.ai/api/v1/chat/completions");
+            validate_endpoint_url(url)?;
 
             let payload = serde_json::json!({
                 "model": model,

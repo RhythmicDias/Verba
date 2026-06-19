@@ -46,8 +46,14 @@ pub fn check_local_model(app_handle: AppHandle) -> bool {
 
 #[tauri::command]
 pub fn get_local_model_path(app_handle: AppHandle) -> Result<String, String> {
-    let path = get_model_path(&app_handle)
-        .ok_or_else(|| "Failed to determine model storage path".to_string())?;
+    let exists = check_local_model(app_handle.clone());
+    let path = if exists {
+        get_model_path(&app_handle)
+            .ok_or_else(|| "Failed to determine model storage path".to_string())?
+    } else {
+        get_model_dir(&app_handle)
+            .ok_or_else(|| "Failed to determine model storage directory".to_string())?
+    };
     Ok(path.to_string_lossy().into_owned())
 }
 
@@ -228,6 +234,34 @@ fn get_sidecar_path(app_handle: &AppHandle, binary_name: &str) -> Option<PathBuf
     Some(current_dir.join(&bin_name_plain))
 }
 
+pub fn is_gpu_available() -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        std::path::Path::new("C:\\Windows\\System32\\nvcuda.dll").exists()
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::path::Path::new("/usr/lib/x86_64-linux-gnu/libcuda.so").exists()
+            || std::path::Path::new("/usr/lib/libcuda.so").exists()
+            || std::process::Command::new("nvidia-smi").output().is_ok()
+    }
+    #[cfg(target_os = "macos")]
+    {
+        // Apple Silicon macOS runs Metal acceleration out of the box in llama.cpp,
+        // which does not require separate CUDA drivers.
+        true
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+    {
+        false
+    }
+}
+
+#[tauri::command]
+pub fn is_gpu_detected() -> bool {
+    is_gpu_available()
+}
+
 pub fn run_local_inference(
     app_handle: &AppHandle,
     system_prompt: &str,
@@ -255,6 +289,10 @@ pub fn run_local_inference(
         system_prompt, user_prompt
     );
 
+    // Read config to see if GPU is enabled
+    let config = crate::storage::get_config(app_handle);
+    let use_gpu = config.use_gpu && is_gpu_available();
+
     // Run llama-completion without showing a console window on Windows (prevents focus loss and blur trigger)
     let mut cmd = std::process::Command::new(&sidecar_path);
     
@@ -264,18 +302,21 @@ pub fn run_local_inference(
         cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
     }
 
-    let output = cmd
-        .arg("-m")
-        .arg(&model_path)
-        .arg("-p")
-        .arg(&formatted_prompt)
-        .arg("-n")
-        .arg("256")
-        .arg("--temp")
-        .arg("0.3")
+    cmd.arg("-m").arg(&model_path);
+
+    if use_gpu {
+        cmd.arg("-ngl").arg("99");
+    }
+
+    cmd.arg("-c").arg("16384");
+
+    cmd.arg("-p").arg(&formatted_prompt)
+        .arg("-n").arg("12000")
+        .arg("--temp").arg("0.3")
         .arg("-no-cnv")
-        .arg("--simple-io")
-        .output()
+        .arg("--simple-io");
+
+    let output = cmd.output()
         .map_err(|e| format!("Failed to launch llama-completion sidecar: {}", e))?;
 
     if !output.status.success() {
