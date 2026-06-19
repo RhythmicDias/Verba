@@ -12,14 +12,14 @@ pub struct LLMConfig {
 
 fn get_style_prompt(style: &str) -> &str {
     match style {
-        "concise" => "Make the text highly concise, clear, and punchy. Eliminate fluff, passive voice, wordiness, and redundancies. Direct, strong, and active language is preferred while preserving the core message.",
-        "detailed" => "Elaborate on the input text with clarity. Expand on the core concepts, providing thorough details, context, and clear logical progression, while remaining readable, engaging, and avoiding filler.",
-        "formal" => "Elevate the text to a formal, elegant, sophisticated, and serious tone. Use high-register vocabulary, precise grammatical structures, and professional transitions. Strictly avoid slang, casual idioms, or contractions.",
-        "funny" => "Infuse the text with a witty, humorous, and engaging twist. Maintain the core meaning and context, but make it lighthearted, clever, and fun.",
-        "medical" => "Format the text into a professional, concise, clinical medical text. Use standard medical terminology, precise clinical language. Do not make up things.",
-        "summarize" => "Summarize the text clearly, highlighting the most important information and key takeaways. Avoid losing critical context, but omit fluff and unnecessary details. Provide a clean, cohesive summary.",
+        "concise" => "Rewrite the input text to be as brief, direct, and concise as possible. Remove all filler, passive voice, and redundant words, while strictly preserving the core information.",
+        "detailed" => "Elaborate on the input text by expanding on the core points. Provide additional helpful context and explanations while preserving the original meaning and readability.",
+        "formal" => "Rewrite the text in a highly formal, serious, and academic tone. Replace contractions, slang, and casual words with precise vocabulary, while preserving the exact message.",
+        "funny" => "Rewrite the text to be witty, sarcastic, and humorous. Make a lighthearted joke about the situation, but preserve the core meaning. Do not copy the input verbatim or repeat yourself.",
+        "medical" => "Translate and rewrite the symptoms or description into a formal, concise, and clinical medical note. Use standard medical terminology, while preserving all clinical details.",
+        "summarize" => "Summarize the main points of the input text into a single, short sentence or brief bullet points. Extract only the essential takeaways while retaining critical context.",
         "generative" => "Generate content strictly based on the prompt instructions and the provided context details. DO NOT be chatty. Do NOT include any introductory remarks, conversational filler, conversational prefixes, explanations, or notes. Output ONLY the raw generated content.",
-        _ => "Refine the text to a polite, professional, and workplace-appropriate business tone. Ensure it is clear, respectful, objective, and grammatically precise, removing casual phrasing or conversational slang.",
+        _ => "Rewrite the text in a polite, objective, and professional business tone. Remove slang and casual phrasing, while strictly preserving the original meaning. Do not add email intros, greetings, signatures, or sign-offs.",
     }
 }
 
@@ -91,7 +91,7 @@ pub async fn call_llm(
     };
 
     let emoji_rule = if style == "funny" {
-        "You may use contextually relevant emojis to enhance the humor."
+        "You may use up to 2 contextually relevant emojis to enhance the humor, but do NOT spam emojis or repeat text."
     } else {
         "CRITICAL: Do NOT use any emojis or emoticons under any circumstances."
     };
@@ -99,12 +99,12 @@ pub async fn call_llm(
     let (system_message, user_message) = if text.trim().is_empty() {
         (
             format!(
-                "You are a creative generative AI assistant. Your task is to generate high-quality content based on the provided instructions.\n\n\
-                 CRITICAL CONSTRAINTS (Violating these will break the application layout):\n\
-                 - Output ONLY the generated content itself. Do NOT write any introductory remarks, conversational filler (e.g., \"Sure, here is...\"), explanations, notes, or wrap the response in quotes. Do NOT be chatty.\n\
-                 - DO NOT use any markdown formatting (e.g., '**' for bold, '*' for italics, '#' for headers). Output raw, completely plain text.\n\
-                 - DO NOT use double-dashes ('--') or em-dashes ('—'). Use standard punctuation (e.g., single dashes or commas) instead.\n\
-                 - {}",
+                "You are a creative generative AI assistant. Generate high-quality content based on the provided instructions.\n\n\
+                 CRITICAL RULES:\n\
+                 1. Output ONLY the generated content. Do NOT write introductory remarks, conversational filler, explanations, or notes.\n\
+                 2. DO NOT use markdown formatting (no bold **, no italics *, no headers #). Output raw plain text.\n\
+                 3. DO NOT use double-dashes (--) or em-dashes (—).\n\
+                 4. {}",
                 emoji_rule
             ),
             format!(
@@ -115,12 +115,12 @@ pub async fn call_llm(
     } else if style == "generative" {
         (
             format!(
-                "You are a creative generative AI assistant. Your task is to generate high-quality content based on the provided instructions and context.\n\n\
-                 CRITICAL CONSTRAINTS (Violating these will break the application layout):\n\
-                 - Output ONLY the generated content itself. Do NOT write any introductory remarks, conversational filler (e.g., \"Sure, here is...\"), explanations, notes, or wrap the response in quotes. Do NOT be chatty.\n\
-                 - DO NOT use any markdown formatting (e.g., '**' for bold, '*' for italics, '#' for headers). Output raw, completely plain text.\n\
-                 - DO NOT use double-dashes ('--') or em-dashes ('—'). Use standard punctuation (e.g., single dashes or commas) instead.\n\
-                 - {}",
+                "You are a creative generative AI assistant. Generate high-quality content based on the instructions and context.\n\n\
+                 CRITICAL RULES:\n\
+                 1. Output ONLY the generated content. Do NOT write introductory remarks, conversational filler, explanations, or notes.\n\
+                 2. DO NOT use markdown formatting (no bold **, no italics *, no headers #). Output raw plain text.\n\
+                 3. DO NOT use double-dashes (--) or em-dashes (—).\n\
+                 4. {}",
                 emoji_rule
             ),
             if custom_prompt.is_some() {
@@ -138,13 +138,15 @@ pub async fn call_llm(
     } else {
         (
             format!(
-                "You are an expert, precise text editor and polishing specialist. Your task is to rewrite, refine, and polish the provided text according to this specific style/directive: \"{}\".\n\n\
-                 CRITICAL CONSTRAINTS (Violating these will break the application layout):\n\
-                 - Process and rewrite the text provided within the <target_text> tags.\n\
-                 - Output ONLY the polished/rewritten text itself. Do NOT write any introduction, conversational filler, comments, explanation of your changes, or wrap the output in quotes.\n\
-                 - DO NOT use any markdown formatting (e.g., '**' for bold, '*' for italics, '#' for headers). Output raw, completely plain text.\n\
-                 - DO NOT use double-dashes ('--') or em-dashes ('—'). Rewrite sentences to use standard punctuation instead.\n\
-                 - {}",
+                "You are an expert text editor. Rewrite the text inside the <target_text> tags to match this style: \"{}\".\n\n\
+                 CRITICAL RULES:\n\
+                 1. You MUST change the tone and vocabulary to fit the requested style. Do NOT copy the input text verbatim.\n\
+                 2. Keep the original meaning and core information intact.\n\
+                 3. Output ONLY the rewritten text itself. Absolutely NO introductory phrases, explanations, notes, greetings, signatures, or sign-offs.\n\
+                 4. Do NOT repeat sentences, paragraphs, or phrases. Output a single cohesive response.\n\
+                 5. DO NOT use markdown formatting (no bold **, no italics *, no headers #). Output raw plain text.\n\
+                 6. DO NOT use double-dashes (--) or em-dashes (—).\n\
+                 7. {}",
                 base_instruction, emoji_rule
             ),
             format!(

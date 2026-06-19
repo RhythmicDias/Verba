@@ -281,14 +281,6 @@ pub fn run_local_inference(
         return Err("Built-in runner (llama-completion sidecar) is missing from the installation.".to_string());
     }
 
-    // Format prompt using Llama-3.2-Instruct chat template
-    let formatted_prompt = format!(
-        "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{}<|eot_id|>\
-         <|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|>\
-         <|start_header_id|>assistant<|end_header_id|>\n\n",
-        system_prompt, user_prompt
-    );
-
     // Read config to see if GPU is enabled
     let config = crate::storage::get_config(app_handle);
     let use_gpu = config.use_gpu && is_gpu_available();
@@ -310,11 +302,12 @@ pub fn run_local_inference(
 
     cmd.arg("-c").arg("16384");
 
-    cmd.arg("-p").arg(&formatted_prompt)
-        .arg("-n").arg("12000")
-        .arg("--temp").arg("0.3")
-        .arg("--repeat-penalty").arg("1.1")
-        .arg("-no-cnv")
+    cmd.arg("-sys").arg(system_prompt)
+        .arg("-p").arg(user_prompt)
+        .arg("-st") // Single-turn mode (applies chat template and exits after first response)
+        .arg("-n").arg("1024")
+        .arg("--temp").arg("0.6")
+        .arg("--repeat-penalty").arg("1.2")
         .arg("--simple-io");
 
     let output = cmd.output()
