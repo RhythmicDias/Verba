@@ -17,7 +17,10 @@
 
 ---
 
-**Verba** is an AI-powered text-polishing utility built with **Tauri v2**, **React**, **TypeScript**, and **Rust**. It runs silently in your system tray, listens to a global hotkey, instantly captures selected text, polishes it using LLM providers, and pastes the refined text back to your focused application.
+**Verba** is a **fully offline, local-first** AI-powered text-polishing utility built with **Tauri v2**, **React**, **TypeScript**, and **Rust**—with the flexible option to also connect to online LLM providers. It runs silently in your system tray, listens to a global hotkey, instantly captures selected text, polishes it locally or online, and pastes the refined text back to your focused application.
+
+> [!IMPORTANT]
+> **100% Offline & Private**: Verba runs completely offline using a built-in `llama-completion` sidecar powered by the `Llama-3.2-1B-Instruct` model—so your text never leaves your device. If you prefer, you can easily configure it to use online cloud providers (like OpenAI, Anthropic, Gemini, or Groq) in the Settings.
 
 ## ✨ Features
 
