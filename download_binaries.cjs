@@ -38,7 +38,7 @@ async function main() {
     fs.unlinkSync(path.join(BIN_DIR, file));
   }
 
-  const targetArg = process.argv[2] || '';
+  const targetArg = process.argv.slice(2).join(' ');
   let downloadUrl = '';
   let platform = process.platform;
   
@@ -70,8 +70,14 @@ async function main() {
   } else {
     // macOS extraction
     execSync(`unzip -o "${zipPath}" -d "${BIN_DIR}"`);
-    if (fs.existsSync(path.join(BIN_DIR, 'llama-cli'))) {
-      fs.renameSync(path.join(BIN_DIR, 'llama-cli'), path.join(BIN_DIR, 'llama-completion'));
+    let llamaCliPath = path.join(BIN_DIR, 'llama-cli');
+    if (!fs.existsSync(llamaCliPath)) {
+      if (fs.existsSync(path.join(BIN_DIR, 'build', 'bin', 'llama-cli'))) {
+        llamaCliPath = path.join(BIN_DIR, 'build', 'bin', 'llama-cli');
+      }
+    }
+    if (fs.existsSync(llamaCliPath)) {
+      fs.renameSync(llamaCliPath, path.join(BIN_DIR, 'llama-completion'));
       execSync(`chmod +x "${path.join(BIN_DIR, 'llama-completion')}"`);
     }
   }
@@ -81,10 +87,16 @@ async function main() {
   // Also clean up llama-server and other heavy executables we don't need
   const extractedFiles = fs.readdirSync(BIN_DIR);
   for (const file of extractedFiles) {
-    if (file.endsWith('.exe') && file !== 'llama-completion.exe') {
-      fs.unlinkSync(path.join(BIN_DIR, file));
-    } else if (platform === 'darwin' && !file.includes('.') && file !== 'llama-completion') {
-      fs.unlinkSync(path.join(BIN_DIR, file));
+    const fullPath = path.join(BIN_DIR, file);
+    const isDir = fs.statSync(fullPath).isDirectory();
+    if (isDir) {
+      fs.rmSync(fullPath, { recursive: true, force: true });
+    } else {
+      if (file.endsWith('.exe') && file !== 'llama-completion.exe') {
+        fs.unlinkSync(fullPath);
+      } else if (platform === 'darwin' && !file.includes('.') && file !== 'llama-completion') {
+        fs.unlinkSync(fullPath);
+      }
     }
   }
 
