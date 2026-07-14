@@ -39,6 +39,11 @@ fn delete_api_key(provider: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn get_api_key_value(provider: String) -> Result<String, String> {
+    storage::get_api_key(&provider).ok_or_else(|| "Key not found".to_string())
+}
+
+#[tauri::command]
 fn get_app_config(app_handle: AppHandle) -> AppConfig {
     storage::get_config(&app_handle)
 }
@@ -226,11 +231,13 @@ pub fn run() {
                 Box::<dyn std::error::Error>::from(format!("Invalid hotkey configuration: {}", e))
             })?;
 
-            app.global_shortcut().on_shortcut(shortcut, move |app_handle_cb, _shortcut, event| {
+            if let Err(e) = app.global_shortcut().on_shortcut(shortcut, move |app_handle_cb, _shortcut, event| {
                 if event.state() == ShortcutState::Pressed {
                     trigger_copy_and_show_popup(app_handle_cb);
                 }
-            })?;
+            }) {
+                eprintln!("Warning: Failed to register global shortcut. It may be in use by another application. Error: {}", e);
+            }
 
 
             // Setup main window close interception to hide instead of destroy
@@ -289,6 +296,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             has_api_key,
+            get_api_key_value,
             set_api_key,
             delete_api_key,
             get_app_config,
