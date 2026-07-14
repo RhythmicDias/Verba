@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Trash2, Copy } from "lucide-react";
 
 export interface HistoryEntry {

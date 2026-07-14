@@ -15,7 +15,7 @@ export const STYLE_NAMES: Record<string, string> = {
 
 export interface PreferencesTabProps {
   draftConfig: any;
-  updateDraftField: (field: string, value: any) => void;
+  updateDraftField: (field: any, value: any) => void;
   setDraftConfig: React.Dispatch<React.SetStateAction<any>>;
   checkLocalModel: () => void;
   hasLocalModel: boolean;

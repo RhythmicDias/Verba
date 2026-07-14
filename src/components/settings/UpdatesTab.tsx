@@ -1,4 +1,4 @@
-import React from "react";
+
 import { RefreshCw, Check, Download } from "lucide-react";
 
 export interface UpdatesTabProps {
