@@ -16,6 +16,10 @@ pub struct HistoryEntry {
     pub timestamp: String,
     pub provider: String,
     pub style: String,
+    #[serde(default)]
+    pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub model: Option<String>,
 }
 
 fn default_shortcuts() -> std::collections::HashMap<String, String> {
@@ -180,6 +184,8 @@ pub fn add_history_entry(
     after: &str,
     provider: &str,
     style: &str,
+    duration_ms: Option<u64>,
+    model: Option<String>,
 ) -> Result<HistoryEntry, String> {
     let mut config = get_config(app_handle);
     let entry = HistoryEntry {
@@ -189,6 +195,8 @@ pub fn add_history_entry(
         timestamp: Utc::now().to_rfc3339(),
         provider: provider.to_string(),
         style: style.to_string(),
+        duration_ms,
+        model,
     };
     if config.save_history {
         config.history.insert(0, entry.clone());

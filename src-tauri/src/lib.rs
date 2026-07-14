@@ -2,6 +2,7 @@ mod clipboard;
 mod storage;
 mod llm;
 mod llama;
+mod os_helpers;
 
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
@@ -12,7 +13,15 @@ use storage::{AppConfig, HistoryEntry};
 struct AppState {
     copied_text: Mutex<String>,
     clipboard_backup: Mutex<Option<String>>,
+    #[cfg(target_os = "windows")]
+    target_window: Mutex<Option<isize>>,
+    #[cfg(target_os = "macos")]
+    target_window: Mutex<Option<String>>,
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    target_window: Mutex<Option<()>>,
+    http_client: reqwest::Client,
 }
+
 
 #[tauri::command]
 fn has_api_key(provider: String) -> bool {
@@ -46,8 +55,10 @@ fn add_history(
     after: String,
     provider: String,
     style: String,
+    duration_ms: Option<u64>,
+    model: Option<String>,
 ) -> Result<HistoryEntry, String> {
-    storage::add_history_entry(&app_handle, &before, &after, &provider, &style)
+    storage::add_history_entry(&app_handle, &before, &after, &provider, &style, duration_ms, model)
 }
 
 #[tauri::command]
@@ -64,6 +75,10 @@ fn paste_and_close(
 ) -> Result<(), String> {
     // Write polished text to clipboard
     app_handle.clipboard().write_text(text).map_err(|e| e.to_string())?;
+
+    // Focus the target window first!
+    let target = state.target_window.lock().unwrap_or_else(|e| e.into_inner()).clone();
+    os_helpers::focus_window(target);
 
     // Hide popup window
     if let Some(popup) = app_handle.get_webview_window("popup") {
@@ -97,6 +112,12 @@ fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
     println!("Global hotkey triggered! Starting copy simulation...");
 
     let state = app_handle.state::<AppState>();
+
+    // Capture the target window that was focused before the hotkey popup shows
+    let target = os_helpers::capture_foreground_window();
+    if let Ok(mut win_guard) = state.target_window.lock() {
+        *win_guard = target;
+    }
 
     // Back up current clipboard content
     let backup = app_handle.clipboard().read_text().ok();
@@ -191,6 +212,8 @@ pub fn run() {
         .manage(AppState {
             copied_text: Mutex::new(String::new()),
             clipboard_backup: Mutex::new(None),
+            target_window: Mutex::new(None),
+            http_client: reqwest::Client::new(),
         })
         .setup(|app| {
             let app_handle = app.handle().clone();

@@ -26,6 +26,8 @@ interface HistoryEntry {
   timestamp: string;
   provider: string;
   style: string;
+  duration_ms?: number;
+  model?: string;
 }
 
 const STYLE_NAMES: Record<string, string> = {
@@ -121,7 +123,7 @@ export default function Settings() {
   };
 
   // Updater State
-  const [currentVersion, setCurrentVersion] = useState("0.1.0");
+  const [currentVersion, setCurrentVersion] = useState("0.1.1");
   const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "available" | "downloading" | "installing" | "up-to-date" | "error">("idle");
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [updateManifest, setUpdateManifest] = useState<Update | null>(null);
@@ -368,10 +370,7 @@ export default function Settings() {
     if (keyName === "ENTER") keyName = "Enter";
     if (keyName === " ") keyName = "Space";
 
-    if (parts.length === 0) {
-      setHotkeyError("Shortcut must include at least one modifier key (Ctrl, Alt, Shift)");
-      return;
-    }
+
 
     const shortcutStr = [...parts, keyName].join("+");
     setHotkeyError(null);
@@ -939,7 +938,7 @@ export default function Settings() {
                   <Keyboard size={16} /> Global Trigger Shortcut
                 </h3>
                 <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
-                  Use the trigger button below to assign a new hotkey. Press your combination of modifiers (e.g. Ctrl, Alt, Shift) along with a key, then release.
+                  Use the trigger button below to assign a new hotkey. Press any key or combination of keys, then release.
                 </p>
 
                 <div className="flex items-center gap-3">
@@ -1007,6 +1006,16 @@ export default function Settings() {
                           <span className="uppercase tracking-wider text-slate-400 font-bold">
                             {item.provider}
                           </span>
+                          {item.model && (
+                            <span className="text-slate-500 font-bold uppercase tracking-wider">
+                              • {item.model}
+                            </span>
+                          )}
+                          {item.duration_ms !== undefined && item.duration_ms !== null && (
+                            <span className="text-slate-500 font-bold">
+                              ({(item.duration_ms / 1000).toFixed(1)}s)
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-3">
                           <span>{new Date(item.timestamp).toLocaleString()}</span>

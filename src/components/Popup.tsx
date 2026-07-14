@@ -51,7 +51,8 @@ export default function Popup() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shortcuts, setShortcuts] = useState<Record<string, string>>({});
-  
+  const [elapsedTime, setElapsedTime] = useState(0);
+
   const isMouseDownRef = useRef(false);
   const shortcutsRef = useRef<Record<string, string>>({});
   const handlePolishRef = useRef<((styleId: string, isCustom?: boolean) => Promise<void>) | null>(null);
@@ -59,6 +60,22 @@ export default function Popup() {
   useEffect(() => {
     shortcutsRef.current = shortcuts;
   }, [shortcuts]);
+
+  useEffect(() => {
+    let intervalId: any;
+    if (isLoading) {
+      const startTime = Date.now();
+      setElapsedTime(0);
+      intervalId = setInterval(() => {
+        setElapsedTime((Date.now() - startTime) / 1000);
+      }, 100);
+    } else {
+      setElapsedTime(0);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isLoading]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
@@ -182,6 +199,8 @@ export default function Popup() {
     setIsLoading(true);
     setError(null);
 
+    const startTime = Date.now();
+
     try {
       // Always fetch the freshest configuration when starting to polish
       const freshConfig: AppConfig = await invoke("get_app_config");
@@ -214,12 +233,16 @@ export default function Popup() {
         llmConfig
       );
 
+      const durationMs = Date.now() - startTime;
+
       // Save to history in Rust config
       await invoke("add_history", {
         before: copiedText,
         after: polished,
         provider: activeProvider,
-        style: isCustom ? "Custom" : styleId
+        style: isCustom ? "Custom" : styleId,
+        durationMs: durationMs,
+        model: llmConfig.model
       });
 
       // Write back to clipboard and paste
@@ -257,7 +280,12 @@ export default function Popup() {
         {isLoading ? (
           /* Processing Loader View */
           <div className="flex flex-col items-center justify-center gap-2 animate-in fade-in zoom-in duration-300">
-            <Loader2 size={32} className="text-[#e8ff00] animate-spin" />
+            <div className="relative flex items-center justify-center w-12 h-12">
+              <Loader2 size={48} className="text-[#e8ff00] animate-spin" />
+              <span className="absolute text-[9px] font-extrabold text-[#e8ff00] tabular-nums">
+                {elapsedTime.toFixed(1)}s
+              </span>
+            </div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8ff00]">Polishing...</span>
           </div>
         ) : (
