@@ -291,7 +291,7 @@ pub fn run_local_inference(
     #[cfg(target_os = "windows")]
     {
         use std::os::windows::process::CommandExt;
-        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        cmd.creation_flags(0x0C000000); // CREATE_NO_WINDOW | CREATE_DEFAULT_ERROR_MODE
     }
 
     cmd.arg("-m").arg(&model_path);

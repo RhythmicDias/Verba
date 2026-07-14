@@ -38,11 +38,27 @@
                     A local-first AI-powered text-polishing utility. Select text, press a hotkey, polish instantly with Llama-3.2, and auto-paste back. No internet required.
                 </p>
                 <div class="hero-actions" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem;">
-                    <a href="https://github.com/RhythmicDias/Verba/releases/latest/download/Verba_0.1.1_x64_en-US.msi" class="btn btn-primary" target="_blank">Download for Windows (.msi)</a>
-                    <a href="https://github.com/RhythmicDias/Verba/releases/latest/download/Verba_0.1.1_x64-setup.exe" class="btn btn-primary" target="_blank" style="background-color: #2b313a; border-color: #2b313a;">Download for Windows (.exe)</a>
-                    <a href="https://github.com/RhythmicDias/Verba/releases/latest/download/Verba_0.1.1_x64.dmg" class="btn btn-primary" target="_blank" style="background-color: #4b5563; border-color: #4b5563;">Download for Mac (.dmg)</a>
+                    <a id="download-win-msi" href="https://github.com/RhythmicDias/Verba/releases/latest" class="btn btn-primary" target="_blank">Download for Windows (.msi)</a>
+                    <a id="download-win-exe" href="https://github.com/RhythmicDias/Verba/releases/latest" class="btn btn-primary" target="_blank" style="background-color: #2b313a; border-color: #2b313a;">Download for Windows (.exe)</a>
+                    <a id="download-mac-dmg" href="https://github.com/RhythmicDias/Verba/releases/latest" class="btn btn-primary" target="_blank" style="background-color: #4b5563; border-color: #4b5563;">Download for Mac (.dmg)</a>
                     <a href="https://github.com/RhythmicDias/Verba" class="btn btn-secondary" target="_blank">View Source Code</a>
                 </div>
+                <script>
+                    fetch('https://api.github.com/repos/RhythmicDias/Verba/releases/latest')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.assets) {
+                                const msi = data.assets.find(a => a.name.endsWith('.msi'));
+                                const exe = data.assets.find(a => a.name.endsWith('-setup.exe'));
+                                const dmg = data.assets.find(a => a.name.endsWith('.dmg'));
+                                
+                                if (msi) document.getElementById('download-win-msi').href = msi.browser_download_url;
+                                if (exe) document.getElementById('download-win-exe').href = exe.browser_download_url;
+                                if (dmg) document.getElementById('download-mac-dmg').href = dmg.browser_download_url;
+                            }
+                        })
+                        .catch(err => console.error('Failed to fetch latest release', err));
+                </script>
             </div>
             <div class="hero-visual">
                 <img src="images/5.png" alt="Verba AI Widget" style="width: 100%; max-width: 650px; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4);" />
