@@ -17,6 +17,8 @@ import PreferencesTab from "./settings/PreferencesTab";
 import HistoryTab, { HistoryEntry } from "./settings/HistoryTab";
 import UpdatesTab from "./settings/UpdatesTab";
 
+const APP_VERSION = "0.1.2";
+
 interface AppConfig {
   hotkey: string;
   active_provider: string;

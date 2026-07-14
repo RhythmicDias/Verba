@@ -32,34 +32,37 @@
     <main>
         <section class="hero container">
             <div class="hero-content">
-                <div class="badge">v2.0 Built with Tauri</div>
+                <div class="badge">Download Now</div>
                 <h1 class="hero-title">Refine Your Text,<br> <span class="highlight">Completely Offline.</span></h1>
                 <p class="hero-description">
                     A local-first AI-powered text-polishing utility. Select text, press a hotkey, polish instantly with Llama-3.2, and auto-paste back. No internet required.
                 </p>
-                <div class="hero-actions">
-                    <a href="https://github.com/RhythmicDias/Verba/releases" class="btn btn-primary" target="_blank">Download Latest Release</a>
+                <div class="hero-actions" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem;">
+                    <a href="https://github.com/RhythmicDias/Verba/releases/latest/download/Verba_0.1.1_x64_en-US.msi" class="btn btn-primary" target="_blank">Download for Windows (.msi)</a>
+                    <a href="https://github.com/RhythmicDias/Verba/releases/latest/download/Verba_0.1.1_x64-setup.exe" class="btn btn-primary" target="_blank" style="background-color: #2b313a; border-color: #2b313a;">Download for Windows (.exe)</a>
+                    <a href="https://github.com/RhythmicDias/Verba/releases/latest/download/Verba_0.1.1_x64.dmg" class="btn btn-primary" target="_blank" style="background-color: #4b5563; border-color: #4b5563;">Download for Mac (.dmg)</a>
                     <a href="https://github.com/RhythmicDias/Verba" class="btn btn-secondary" target="_blank">View Source Code</a>
                 </div>
             </div>
             <div class="hero-visual">
-                <div class="app-mockup">
-                    <div class="mockup-header">
-                        <span class="dot dot-red"></span>
-                        <span class="dot dot-yellow"></span>
-                        <span class="dot dot-green"></span>
-                    </div>
-                    <div class="mockup-body">
-                        <div class="mockup-text-area">
-                            <p class="old-text">This is a text that needs to be polishing because its not write very good.</p>
-                            <div class="arrow-down">↓</div>
-                            <p class="new-text">This text needs polishing because it is not written very well.</p>
-                        </div>
-                        <div class="mockup-controls">
-                            <span class="mockup-tag">Llama-3.2-1B</span>
-                            <button class="mockup-btn">Insert</button>
-                        </div>
-                    </div>
+                <img src="images/5.png" alt="Verba AI Widget" style="width: 100%; max-width: 650px; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4);" />
+            </div>
+        </section>
+
+        <section id="screenshots" class="features container">
+            <h2 class="section-title">Application <span class="highlight">Settings</span></h2>
+            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+                <div class="feature-card" style="padding: 0; overflow: hidden;">
+                    <img src="images/1.png" alt="API Keys Settings" style="width: 100%; display: block;" />
+                </div>
+                <div class="feature-card" style="padding: 0; overflow: hidden;">
+                    <img src="images/2.png" alt="Preferences Settings" style="width: 100%; display: block;" />
+                </div>
+                <div class="feature-card" style="padding: 0; overflow: hidden;">
+                    <img src="images/3.png" alt="Updates Settings" style="width: 100%; display: block;" />
+                </div>
+                <div class="feature-card" style="padding: 0; overflow: hidden;">
+                    <img src="images/4.png" alt="Local History Settings" style="width: 100%; display: block;" />
                 </div>
             </div>
         </section>
