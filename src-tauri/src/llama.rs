@@ -314,6 +314,8 @@ pub fn run_local_inference(
         .arg("--repeat-penalty").arg("1.2")
         .arg("--simple-io");
 
+    cmd.stdin(std::process::Stdio::null());
+
     let output = cmd.output()
         .map_err(|e| format!("Failed to launch llama-completion sidecar: {}", e))?;
 
