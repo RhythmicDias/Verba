@@ -35,7 +35,7 @@
                 <div class="badge">Download Now</div>
                 <h1 class="hero-title">Refine Your Text,<br> <span class="highlight">Completely Offline.</span></h1>
                 <p class="hero-description">
-                    A local-first AI-powered text-polishing utility. Select text, press a hotkey, polish instantly with Llama-3.2, and auto-paste back. No internet required.
+                    Verba is a privacy-first, AI-powered text polishing utility. Running silently in your system tray, it uses a global hotkey to instantly capture, refine via a built-in local LLM, and paste text back into your active application. Need more power? Easily switch to popular cloud AI providers in the settings to unlock boundless creativity.
                 </p>
                 <div class="hero-actions" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem;">
                     <a id="download-win-msi" href="https://github.com/RhythmicDias/Verba/releases/latest" class="btn btn-primary" target="_blank">Download for Windows (.msi)</a>
@@ -122,7 +122,12 @@
         <section id="release-notes" class="features container">
             <h2 class="section-title">Release <span class="highlight">Notes</span></h2>
             <div class="release-notes" style="text-align: left; background: var(--card-bg); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border-color);">
-                <h3>v0.1.5 (Latest)</h3>
+                <h3>v0.1.7 (Latest)</h3>
+                <ul style="list-style-position: inside; color: var(--text-secondary); margin-top: 1rem; margin-bottom: 2rem; line-height: 1.6;">
+                    <li><strong>Features:</strong> Updated landing page copy.</li>
+                    <li><strong>Fix:</strong> Fixed local inference crash by migrating `llama.cpp` sidecar arguments to newer API format (replaced deprecated `-sys` and `-st` with `-p` and `-no-cnv`).</li>
+                </ul>
+                <h3>v0.1.6</h3>
                 <ul style="list-style-position: inside; color: var(--text-secondary); margin-top: 1rem; margin-bottom: 2rem; line-height: 1.6;">
                     <li><strong>Fix:</strong> Corrected auto-updater payload generation by fixing missing signature deployments.</li>
                 </ul>
