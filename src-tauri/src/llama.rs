@@ -299,20 +299,19 @@ pub fn run_local_inference(
     if use_gpu {
         cmd.arg("-ngl").arg("99");
     }
-
-    cmd.arg("-c").arg("16384");
-
     let combined_prompt = format!(
         "<|start_header_id|>system<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
         system_prompt, user_prompt
     );
 
-    cmd.arg("-p").arg(combined_prompt)
-        .arg("-no-cnv") // Disable auto-conversation mode so it doesn't hang waiting for stdin
-        .arg("-n").arg("1024")
-        .arg("--temp").arg("0.6")
-        .arg("--repeat-penalty").arg("1.2")
-        .arg("--simple-io");
+    cmd.arg("-c").arg("8192")
+       .arg("-p").arg(combined_prompt)
+       .arg("-no-cnv")
+       .arg("-n").arg("1024")
+       .arg("--temp").arg("0.6")
+       .arg("--repeat-penalty").arg("1.2")
+       .arg("--no-warmup")
+       .arg("--simple-io");
 
     cmd.stdin(std::process::Stdio::null());
 
