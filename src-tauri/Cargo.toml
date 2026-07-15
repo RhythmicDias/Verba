@@ -1,6 +1,6 @@
 [package]
 name = "verba"
-version = "0.1.8"
+version = "0.1.9"
 description = "Verba — AI-powered text polishing utility with offline local inference"
 authors = ["Stephen Dias"]
 edition = "2021"
