@@ -1,0 +1,70 @@
+{
+  "description": "The bundler configuration.",
+  "default": {
+    "active": false,
+    "android": {
+      "autoIncrementVersionCode": false,
+      "minSdkVersion": 24
+    },
+    "createUpdaterArtifacts": false,
+    "iOS": {
+      "minimumSystemVersion": "14.0"
+    },
+    "icon": [],
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false,
+        "files": {}
+      },
+      "deb": {
+        "files": {}
+      },
+      "rpm": {
+        "epoch": 0,
+        "files": {},
+        "release": "1"
+      }
+    },
+    "macOS": {
+      "dmg": {
+        "appPosition": {
+          "x": 180,
+          "y": 170
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 170
+        },
+        "windowSize": {
+          "height": 400,
+          "width": 660
+        }
+      },
+      "files": {},
+      "hardenedRuntime": true,
+      "minimumSystemVersion": "10.13"
+    },
+    "targets": "all",
+    "useLocalToolsDir": false,
+    "windows": {
+      "allowDowngrades": true,
+      "certificateThumbprint": null,
+      "digestAlgorithm": null,
+      "minimumWebview2Version": null,
+      "nsis": null,
+      "signCommand": null,
+      "timestampUrl": null,
+      "tsp": false,
+      "webviewInstallMode": {
+        "silent": true,
+        "type": "downloadBootstrapper"
+      },
+      "wix": null
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/BundleConfig"
+    }
+  ]
+}
