@@ -67,6 +67,10 @@ async function main() {
     if (fs.existsSync(path.join(BIN_DIR, 'llama-cli.exe'))) {
       fs.renameSync(path.join(BIN_DIR, 'llama-cli.exe'), path.join(BIN_DIR, 'llama-completion.exe'));
     }
+    // Copy llama-cli-impl.dll to llama-completion-impl.dll
+    if (fs.existsSync(path.join(BIN_DIR, 'llama-cli-impl.dll'))) {
+      fs.copyFileSync(path.join(BIN_DIR, 'llama-cli-impl.dll'), path.join(BIN_DIR, 'llama-completion-impl.dll'));
+    }
   } else {
     // macOS extraction
     execSync(`unzip -o "${zipPath}" -d "${BIN_DIR}"`);

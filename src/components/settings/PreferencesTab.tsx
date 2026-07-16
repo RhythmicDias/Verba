@@ -24,6 +24,7 @@ export interface PreferencesTabProps {
   modelDownloadError: string | null;
   handleStartDownload: () => void;
   handleCancelDownload: () => void;
+  handleDeleteModel: () => void;
   localModelPath: string;
   isGpuAvailable: boolean;
   isRecordingHotkey: boolean;
@@ -43,6 +44,7 @@ export default function PreferencesTab({
   modelDownloadError,
   handleStartDownload,
   handleCancelDownload,
+  handleDeleteModel,
   localModelPath,
   isGpuAvailable,
   isRecordingHotkey,
@@ -139,9 +141,18 @@ export default function PreferencesTab({
                       Download Local Model (700MB)
                     </button>
                   )}
-                  {hasLocalModel && (
-                    <div className="text-[10px] text-slate-600 font-semibold flex items-center gap-1.5">
-                      <span className="text-emerald-600 text-xs">✓</span> Local model is successfully installed and ready for offline polishing.
+                   {hasLocalModel && (
+                    <div className="flex items-center justify-between w-full">
+                      <div className="text-[10px] text-slate-600 font-semibold flex items-center gap-1.5">
+                        <span className="text-emerald-600 text-xs">✓</span> Local model is successfully installed and ready for offline polishing.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleDeleteModel}
+                        className="text-[9px] font-bold text-red-600 hover:text-red-800 transition-colors uppercase border border-red-200 hover:border-red-400 bg-red-50 hover:bg-red-100/50 px-2.5 py-1 rounded-lg cursor-pointer"
+                      >
+                        Delete Model
+                      </button>
                     </div>
                   )}
                 </div>

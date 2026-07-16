@@ -206,19 +206,7 @@ fn get_sidecar_path(app_handle: &AppHandle, binary_name: &str) -> Option<PathBuf
     let current_exe = std::env::current_exe().ok()?;
     let current_dir = current_exe.parent()?;
 
-    // 1. Try triple name in current directory (standard Tauri sidecar behavior)
-    let path_triple = current_dir.join(&bin_name_triple);
-    if path_triple.exists() {
-        return Some(path_triple);
-    }
-
-    // 2. Try plain name in current directory (how Tauri renames sidecars in target/debug during dev mode)
-    let path_plain = current_dir.join(&bin_name_plain);
-    if path_plain.exists() {
-        return Some(path_plain);
-    }
-
-    // 3. Try resource directory fallbacks
+    // 1. Try resource directory first (so we are adjacent to the bundled DLLs in the binaries/ folder)
     if let Ok(res_dir) = app_handle.path().resource_dir() {
         let res_path_triple = res_dir.join("binaries").join(&bin_name_triple);
         if res_path_triple.exists() {
@@ -228,6 +216,28 @@ fn get_sidecar_path(app_handle: &AppHandle, binary_name: &str) -> Option<PathBuf
         if res_path_plain.exists() {
             return Some(res_path_plain);
         }
+    }
+
+    // 2. Try current_dir/binaries fallback (useful for dev mode / tests where binaries are copied adjacent to the DLLs)
+    let dev_binaries_triple = current_dir.join("binaries").join(&bin_name_triple);
+    if dev_binaries_triple.exists() {
+        return Some(dev_binaries_triple);
+    }
+    let dev_binaries_plain = current_dir.join("binaries").join(&bin_name_plain);
+    if dev_binaries_plain.exists() {
+        return Some(dev_binaries_plain);
+    }
+
+    // 3. Try triple name in current directory (standard Tauri sidecar behavior)
+    let path_triple = current_dir.join(&bin_name_triple);
+    if path_triple.exists() {
+        return Some(path_triple);
+    }
+
+    // 4. Try plain name in current directory (how Tauri renames sidecars in target/debug during dev mode)
+    let path_plain = current_dir.join(&bin_name_plain);
+    if path_plain.exists() {
+        return Some(path_plain);
     }
 
     // Return the default plain path if none found (so calling code gets a path to check/fail on)
@@ -307,6 +317,7 @@ pub fn run_local_inference(
     cmd.arg("-c").arg("8192")
        .arg("-p").arg(combined_prompt)
        .arg("-no-cnv")
+       .arg("-st")
        .arg("-n").arg("1024")
        .arg("--temp").arg("0.6")
        .arg("--repeat-penalty").arg("1.2")
@@ -327,8 +338,12 @@ pub fn run_local_inference(
     
     // 1. Find the start of the model's actual answer after the assistant marker
     let assistant_marker = "<|start_header_id|>assistant<|end_header_id|>";
+    let truncation_marker = "... (truncated)";
+    
     let response_start = if let Some(pos) = stdout_str.rfind(assistant_marker) {
         &stdout_str[pos + assistant_marker.len()..]
+    } else if let Some(pos) = stdout_str.rfind(truncation_marker) {
+        &stdout_str[pos + truncation_marker.len()..]
     } else if let Some(pos) = stdout_str.rfind("assistant\r\n") {
         &stdout_str[pos + 11..]
     } else if let Some(pos) = stdout_str.rfind("assistant\n") {
@@ -355,4 +370,19 @@ pub fn run_local_inference(
         .to_string();
 
     Ok(final_text)
+}
+
+#[tauri::command]
+pub fn delete_local_model(app_handle: AppHandle) -> Result<(), String> {
+    if IS_DOWNLOADING.load(Ordering::SeqCst) {
+        return Err("Cannot delete model while download is in progress. Please cancel the download first.".to_string());
+    }
+    if let Some(path) = get_model_path(&app_handle) {
+        if path.exists() {
+            std::fs::remove_file(path).map_err(|e| format!("Failed to delete model file: {}", e))?;
+        }
+        Ok(())
+    } else {
+        Err("Failed to resolve model storage path".to_string())
+    }
 }

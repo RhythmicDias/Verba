@@ -145,6 +145,21 @@ export default function Settings() {
     }
   };
 
+  const handleDeleteModel = async () => {
+    if (!window.confirm("Are you sure you want to delete the downloaded local model? This will free up ~900MB of space.")) {
+      return;
+    }
+    try {
+      await invoke("delete_local_model");
+      setHasLocalModel(false);
+      checkLocalModel();
+      showTemporaryStatus("Local model deleted successfully.");
+    } catch (err: any) {
+      console.error("Failed to delete local model:", err);
+      showTemporaryStatus(`Error: ${err.toString()}`);
+    }
+  };
+
   useEffect(() => {
     checkLocalModel();
 
@@ -498,6 +513,7 @@ export default function Settings() {
               modelDownloadError={modelDownloadError}
               handleStartDownload={handleStartDownload}
               handleCancelDownload={handleCancelDownload}
+              handleDeleteModel={handleDeleteModel}
               localModelPath={localModelPath}
               isGpuAvailable={isGpuAvailable}
               isRecordingHotkey={isRecordingHotkey}
