@@ -44,4 +44,4 @@ dist-ssr
 llama-macos-arm64/
 llama-macos-x64/
 llama-win-cuda-12.4-x64/  
- 
+src-tauri/binaries/
