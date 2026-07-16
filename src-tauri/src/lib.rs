@@ -147,7 +147,11 @@ fn trigger_copy_and_show_popup(app_handle: &AppHandle) {
             if !text.is_empty() {
                 copied = text;
                 #[cfg(debug_assertions)]
-                println!("Success: Copied text on poll iteration {}: '{}'", i, copied);
+                println!(
+                    "Success: Copied text on poll iteration {}: '{}'",
+                    i,
+                    copied.replace("\r", "\\r").replace("\n", "\\n")
+                );
                 break;
             }
         }
@@ -312,7 +316,8 @@ pub fn run() {
             llama::download_local_model,
             llama::cancel_local_model_download,
             llama::get_local_model_path,
-            llama::is_gpu_detected
+            llama::is_gpu_detected,
+            llama::delete_local_model
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
