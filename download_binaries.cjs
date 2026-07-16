@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const LLAMA_VERSION = 'b4604';
+const LLAMA_VERSION = 'b10020';
 const BIN_DIR = path.join(__dirname, 'src-tauri', 'binaries');
 
 const downloadFile = (url, dest) => {
@@ -35,7 +35,11 @@ async function main() {
   // Clear existing dummy binaries
   const files = fs.readdirSync(BIN_DIR);
   for (const file of files) {
-    fs.unlinkSync(path.join(BIN_DIR, file));
+    try {
+      fs.unlinkSync(path.join(BIN_DIR, file));
+    } catch (e) {
+      console.warn(`Could not delete existing file ${file}: ${e.message}`);
+    }
   }
 
   const targetArg = process.argv.slice(2).join(' ');
@@ -63,13 +67,13 @@ async function main() {
   if (platform === 'win32') {
     // Windows extraction
     execSync(`powershell -command "Expand-Archive -Path '${zipPath}' -DestinationPath '${BIN_DIR}' -Force"`);
-    // Rename llama-cli.exe to llama-completion.exe
+    // Rename llama-cli.exe to verba-engine.exe
     if (fs.existsSync(path.join(BIN_DIR, 'llama-cli.exe'))) {
-      fs.renameSync(path.join(BIN_DIR, 'llama-cli.exe'), path.join(BIN_DIR, 'llama-completion.exe'));
+      fs.renameSync(path.join(BIN_DIR, 'llama-cli.exe'), path.join(BIN_DIR, 'verba-engine.exe'));
     }
-    // Copy llama-cli-impl.dll to llama-completion-impl.dll
+    // Copy llama-cli-impl.dll to verba-engine-impl.dll
     if (fs.existsSync(path.join(BIN_DIR, 'llama-cli-impl.dll'))) {
-      fs.copyFileSync(path.join(BIN_DIR, 'llama-cli-impl.dll'), path.join(BIN_DIR, 'llama-completion-impl.dll'));
+      fs.copyFileSync(path.join(BIN_DIR, 'llama-cli-impl.dll'), path.join(BIN_DIR, 'verba-engine-impl.dll'));
     }
   } else {
     // macOS extraction
@@ -81,26 +85,34 @@ async function main() {
       }
     }
     if (fs.existsSync(llamaCliPath)) {
-      fs.renameSync(llamaCliPath, path.join(BIN_DIR, 'llama-completion'));
-      execSync(`chmod +x "${path.join(BIN_DIR, 'llama-completion')}"`);
+      fs.renameSync(llamaCliPath, path.join(BIN_DIR, 'verba-engine'));
+      execSync(`chmod +x "${path.join(BIN_DIR, 'verba-engine')}"`);
     }
   }
 
-  fs.unlinkSync(zipPath);
+  try {
+    fs.unlinkSync(zipPath);
+  } catch (e) {
+    console.warn(`Could not delete zip file: ${e.message}`);
+  }
   
   // Also clean up llama-server and other heavy executables we don't need
   const extractedFiles = fs.readdirSync(BIN_DIR);
   for (const file of extractedFiles) {
     const fullPath = path.join(BIN_DIR, file);
-    const isDir = fs.statSync(fullPath).isDirectory();
-    if (isDir) {
-      fs.rmSync(fullPath, { recursive: true, force: true });
-    } else {
-      if (file.endsWith('.exe') && file !== 'llama-completion.exe') {
-        fs.unlinkSync(fullPath);
-      } else if (platform === 'darwin' && !file.includes('.') && file !== 'llama-completion') {
-        fs.unlinkSync(fullPath);
+    try {
+      const isDir = fs.statSync(fullPath).isDirectory();
+      if (isDir) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      } else {
+        if (file.endsWith('.exe') && file !== 'verba-engine.exe') {
+          fs.unlinkSync(fullPath);
+        } else if (platform === 'darwin' && !file.includes('.') && file !== 'verba-engine') {
+          fs.unlinkSync(fullPath);
+        }
       }
+    } catch (e) {
+      console.warn(`Could not process/delete ${file}: ${e.message}`);
     }
   }
 

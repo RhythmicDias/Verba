@@ -284,11 +284,11 @@ pub fn run_local_inference(
         return Err("Local model is not downloaded. Please download it in Settings first.".to_string());
     }
 
-    let sidecar_path = get_sidecar_path(app_handle, "llama-completion")
-        .ok_or_else(|| "Failed to resolve llama-completion sidecar executable path".to_string())?;
+    let sidecar_path = get_sidecar_path(app_handle, "verba-engine")
+        .ok_or_else(|| "Failed to resolve verba-engine sidecar executable path".to_string())?;
 
     if !sidecar_path.exists() {
-        return Err("Built-in runner (llama-completion sidecar) is missing from the installation.".to_string());
+        return Err("Built-in runner (verba-engine sidecar) is missing from the installation.".to_string());
     }
 
     // Read config to see if GPU is enabled
