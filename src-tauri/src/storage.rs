@@ -28,7 +28,7 @@ fn default_shortcuts() -> std::collections::HashMap<String, String> {
         ("professional".to_string(), "2".to_string()),
         ("detailed".to_string(), "3".to_string()),
         ("formal".to_string(), "4".to_string()),
-        ("funny".to_string(), "5".to_string()),
+        ("grammar".to_string(), "5".to_string()),
         ("medical".to_string(), "6".to_string()),
         ("summarize".to_string(), "7".to_string()),
         ("generative".to_string(), "8".to_string()),

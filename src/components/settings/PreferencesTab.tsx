@@ -6,7 +6,7 @@ export const STYLE_NAMES: Record<string, string> = {
   professional: "Professional",
   detailed: "Detailed",
   formal: "Formal",
-  funny: "Funny",
+  grammar: "Grammar",
   medical: "Medical",
   summarize: "Summarize",
   generative: "Generative",

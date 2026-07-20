@@ -45,28 +45,30 @@ async function main() {
   const targetArg = process.argv.slice(2).join(' ');
   let downloadUrl = '';
   let platform = process.platform;
+  const isMac = platform === 'darwin';
+  const archiveExt = isMac ? '.tar.gz' : '.zip';
+  const archivePath = path.join(BIN_DIR, `llama${archiveExt}`);
   
   if (platform === 'win32') {
     downloadUrl = `https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-win-vulkan-x64.zip`;
   } else if (platform === 'darwin') {
     if (targetArg.includes('x86_64')) {
-      downloadUrl = `https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-x64.zip`;
+      downloadUrl = `https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-x64.tar.gz`;
     } else {
-      downloadUrl = `https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-arm64.zip`;
+      downloadUrl = `https://github.com/ggerganov/llama.cpp/releases/download/${LLAMA_VERSION}/llama-${LLAMA_VERSION}-bin-macos-arm64.tar.gz`;
     }
   } else {
     console.error(`Unsupported platform: ${platform}`);
     process.exit(1);
   }
 
-  const zipPath = path.join(BIN_DIR, 'llama.zip');
   console.log(`Downloading ${downloadUrl}...`);
-  await downloadFile(downloadUrl, zipPath);
+  await downloadFile(downloadUrl, archivePath);
   console.log('Download complete. Extracting...');
 
   if (platform === 'win32') {
     // Windows extraction
-    execSync(`powershell -command "Expand-Archive -Path '${zipPath}' -DestinationPath '${BIN_DIR}' -Force"`);
+    execSync(`powershell -command "Expand-Archive -Path '${archivePath}' -DestinationPath '${BIN_DIR}' -Force"`);
     // Rename llama-cli.exe to verba-engine.exe
     if (fs.existsSync(path.join(BIN_DIR, 'llama-cli.exe'))) {
       fs.renameSync(path.join(BIN_DIR, 'llama-cli.exe'), path.join(BIN_DIR, 'verba-engine.exe'));
@@ -77,7 +79,7 @@ async function main() {
     }
   } else {
     // macOS extraction
-    execSync(`unzip -o "${zipPath}" -d "${BIN_DIR}"`);
+    execSync(`tar -xzf "${archivePath}" -C "${BIN_DIR}"`);
     let llamaCliPath = path.join(BIN_DIR, 'llama-cli');
     if (!fs.existsSync(llamaCliPath)) {
       if (fs.existsSync(path.join(BIN_DIR, 'build', 'bin', 'llama-cli'))) {
@@ -91,9 +93,9 @@ async function main() {
   }
 
   try {
-    fs.unlinkSync(zipPath);
+    fs.unlinkSync(archivePath);
   } catch (e) {
-    console.warn(`Could not delete zip file: ${e.message}`);
+    console.warn(`Could not delete archive file: ${e.message}`);
   }
   
   // Also clean up llama-server and other heavy executables we don't need
