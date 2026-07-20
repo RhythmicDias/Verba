@@ -30,6 +30,7 @@
             </div>
             <nav class="nav-links">
                 <a href="#features">Features</a>
+                <a href="#howto">How To</a>
                 <a href="#installation">Installation</a>
                 <a href="https://github.com/RhythmicDias/Verba" target="_blank" class="btn btn-outline">GitHub</a>
             </nav>
@@ -47,17 +48,30 @@
                     into your active application. Need more power? Easily switch to popular cloud AI providers in the
                     settings to unlock boundless creativity.
                 </p>
-                <div class="hero-actions" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem;">
-                    <a id="download-win-msi" href="https://github.com/RhythmicDias/Verba/releases/latest"
-                        class="btn btn-primary" target="_blank">Download for Windows (.msi)</a>
-                    <a id="download-win-exe" href="https://github.com/RhythmicDias/Verba/releases/latest"
-                        class="btn btn-primary" target="_blank"
-                        style="background-color: #2b313a; border-color: #2b313a;">Download for Windows (.exe)</a>
-                    <a id="download-mac-dmg" href="https://github.com/RhythmicDias/Verba/releases/latest"
-                        class="btn btn-primary" target="_blank"
-                        style="background-color: #4b5563; border-color: #4b5563;">Download for Mac (.dmg)</a>
-                    <a href="https://github.com/RhythmicDias/Verba" class="btn btn-secondary" target="_blank">View
-                        Source Code</a>
+                <div class="hero-actions">
+                    <div class="download-group">
+                        <a id="download-win-msi" href="https://github.com/RhythmicDias/Verba/releases/latest"
+                            class="btn btn-download btn-win-primary" target="_blank">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M0 3.449L9.75 2.1v9.451H0V3.449zm0 17.102L9.75 21.9V12.45H0v8.101zM10.55 1.98L24 0v11.55H10.55V1.98zm0 20.04L24 24V12.45H10.55v9.57z"/>
+                            </svg>
+                            <span>Download Windows (.msi)</span>
+                        </a>
+                        <a id="download-win-exe" href="https://github.com/RhythmicDias/Verba/releases/latest"
+                            class="btn btn-download btn-win-secondary" target="_blank">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M0 3.449L9.75 2.1v9.451H0V3.449zm0 17.102L9.75 21.9V12.45H0v8.101zM10.55 1.98L24 0v11.55H10.55V1.98zm0 20.04L24 24V12.45H10.55v9.57z"/>
+                            </svg>
+                            <span>Download Windows (.exe)</span>
+                        </a>
+                        <a id="download-mac-dmg" href="https://github.com/RhythmicDias/Verba/releases/latest"
+                            class="btn btn-download btn-mac" target="_blank">
+                            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.8 1.11-1.92.99-3.04-.96.04-2.12.64-2.81 1.44-.61.71-1.15 1.86-.99 2.98 1.07.08 2.15-.57 2.81-1.38z"/>
+                            </svg>
+                            <span>Download macOS (.dmg)</span>
+                        </a>
+                    </div>
                 </div>
                 <script>
                     fetch('https://api.github.com/repos/RhythmicDias/Verba/releases/latest')
@@ -77,13 +91,85 @@
                 </script>
             </div>
             <div class="hero-visual">
-                <img src="images/5.png" alt="Verba AI Widget"
-                    style="width: 100%; max-width: 650px; border-radius: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4);" />
+                <div class="app-popup-card">
+                    <!-- Title Header -->
+                    <div class="popup-header">
+                        <div class="popup-brand">
+                            <span class="brand-status-dot"></span>
+                            <span class="brand-name">VERBA</span>
+                        </div>
+                        <button class="popup-close-btn" aria-label="Close">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+
+                    <!-- Notification Banner -->
+                    <div class="popup-banner">
+                        <span class="banner-left">
+                            <span class="banner-dot"></span>
+                            Selected text captured
+                        </span>
+                        <span class="banner-ready-tag">READY</span>
+                    </div>
+
+                    <!-- Preset Options Grid -->
+                    <div class="popup-grid">
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                            <span class="preset-label">Concise</span>
+                            <span class="key-badge">c</span>
+                        </div>
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                            <span class="preset-label">Professional</span>
+                            <span class="key-badge">p</span>
+                        </div>
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="17" y1="18" x2="3" y2="18"></line></svg>
+                            <span class="preset-label">Detailed</span>
+                            <span class="key-badge">d</span>
+                        </div>
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                            <span class="preset-label">Formal</span>
+                            <span class="key-badge">f</span>
+                        </div>
+                        <div class="preset-pill active-preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"></path><path d="M22 10l-7.5 7.5L13 16"></path></svg>
+                            <span class="preset-label">Grammar</span>
+                            <span class="key-badge">g</span>
+                        </div>
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.3.3 0 1 0 .2.3"></path><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path><circle cx="20" cy="10" r="2"></circle></svg>
+                            <span class="preset-label">Medical</span>
+                            <span class="key-badge">m</span>
+                        </div>
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                            <span class="preset-label">Summarize</span>
+                            <span class="key-badge">s</span>
+                        </div>
+                        <div class="preset-pill">
+                            <svg class="preset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+                            <span class="preset-label">Generative</span>
+                            <span class="key-badge">a</span>
+                        </div>
+                    </div>
+
+                    <!-- Custom Prompt Input -->
+                    <div class="popup-input-bar">
+                        <span class="input-placeholder">Custom instruction...</span>
+                        <div class="input-actions">
+                            <span class="key-badge">0</span>
+                            <span class="enter-icon">↵</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="screenshots" class="features container">
-            <h2 class="section-title">Application <span class="highlight">Settings</span></h2>
+            <h2 class="section-title">Application <span class="highlight">Screenshots</span></h2>
             <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
                 <div class="feature-card" style="padding: 0; overflow: hidden;">
                     <img src="images/1.png" alt="API Keys Settings" style="width: 100%; display: block;" />
@@ -92,10 +178,10 @@
                     <img src="images/2.png" alt="Preferences Settings" style="width: 100%; display: block;" />
                 </div>
                 <div class="feature-card" style="padding: 0; overflow: hidden;">
-                    <img src="images/3.png" alt="Updates Settings" style="width: 100%; display: block;" />
+                    <img src="images/3.png" alt="Local Log History Settings" style="width: 100%; display: block;" />
                 </div>
                 <div class="feature-card" style="padding: 0; overflow: hidden;">
-                    <img src="images/4.png" alt="Local History Settings" style="width: 100%; display: block;" />
+                    <img src="images/4.png" alt="Application Updates Settings" style="width: 100%; display: block;" />
                 </div>
             </div>
         </section>
@@ -135,6 +221,151 @@
                     <div class="feature-icon">🚀</div>
                     <h3>Cross-Platform</h3>
                     <p>Available and fully compatible with Windows and macOS (Apple Silicon and Intel).</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="howto" class="features container">
+            <h2 class="section-title">How To <span class="highlight">Use Verba</span></h2>
+            <p class="section-subtitle">
+                A complete setup guide, model tuning instructions, and step-by-step feature walkthroughs.
+            </p>
+
+            <!-- Setup & Model Configurations Container -->
+            <div class="howto-card-box">
+                <h3 class="howto-box-title">
+                    <span class="icon-emoji">⚙️</span> Setting Up the Downloaded Application
+                </h3>
+
+                <div class="howto-steps-grid">
+                    <div class="step-card">
+                        <div class="step-badge">Step 1</div>
+                        <h4>Install & Launch</h4>
+                        <p>Download the installer for your OS (Windows <code>.msi</code>/<code>.exe</code> or Mac <code>.dmg</code>) and complete setup. Verba launches and stays ready in your system tray or menu bar.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-badge">Step 2</div>
+                        <h4>Trigger Hotkey Anywhere</h4>
+                        <p>Highlight text in any application and press <code>Ctrl + Alt + P</code> (or <code>Cmd + Alt + P</code> on Mac). Verba captures text instantly without leaving your active app.</p>
+                    </div>
+
+                    <div class="step-card">
+                        <div class="step-badge">Step 3</div>
+                        <h4>Select Style & Auto-Paste</h4>
+                        <p>Click any style preset or type custom instructions. Verba generates refined text using your selected AI model and automatically pastes it back.</p>
+                    </div>
+                </div>
+
+                <!-- Model Disclaimers & Configuration Callout -->
+                <div class="disclaimer-callout">
+                    <div class="disclaimer-header">
+                        <span class="disclaimer-icon">💡</span>
+                        <h4>Model Setup, Accuracy & Privacy Disclaimers</h4>
+                    </div>
+
+                    <div class="disclaimer-grid">
+                        <div class="disclaimer-block">
+                            <h5 class="disclaimer-title">1. Built-in Tiny Model (Default Offline Engine)</h5>
+                            <p>Verba comes pre-bundled with a lightweight local model running 100% offline on your device with no API keys needed.</p>
+                            <div class="notice-badge warning">
+                                <strong>Accuracy Note:</strong> Due to the small size of the built-in tiny model, accuracy might be quite limited. The primary use of the tiny model is for <strong>generative purposes</strong> (drafting text, brainstorming), while it may also work to polish simple text.
+                            </div>
+                        </div>
+
+                        <div class="disclaimer-block">
+                            <h5 class="disclaimer-title">2. Upgrading to Llama 3B Q4 Model (For Better Local Accuracy)</h5>
+                            <p>If higher accuracy is required locally without relying on online servers:</p>
+                            <ol class="setup-list">
+                                <li>Download a <strong>Llama 3B Q4 model</strong> GGUF file (such as Llama 3.2 3B Instruct Q4_K_M).</li>
+                                <li>Place the downloaded <code>.gguf</code> file inside Verba's default models folder:
+                                    <div class="code-path-group">
+                                        <div><strong>Windows:</strong> <code>%APPDATA%\com.verba.dev\models\</code></div>
+                                        <div><strong>macOS:</strong> <code>~/Library/Application Support/com.verba.dev/models/</code></div>
+                                    </div>
+                                </li>
+                                <li>Rename the file name to exactly: <code class="rename-target">llama-3.2-1b-instruct-q4_k_m.gguf</code></li>
+                            </ol>
+                            <div class="notice-badge info">
+                                <strong>Speed Note:</strong> Larger size models require more system resources and will be slower to run than the tiny model.
+                            </div>
+                        </div>
+
+                        <div class="disclaimer-block">
+                            <h5 class="disclaimer-title">3. Online Cloud API Providers & Privacy Guarantee</h5>
+                            <p>For maximum speed and state-of-the-art accuracy, you can switch to online API providers (OpenAI, Anthropic, Gemini, Groq, Ollama, or OpenRouter) in <strong>Settings &rarr; API Keys</strong>.</p>
+                            <div class="notice-badge privacy">
+                                <strong>Provider Data Terms:</strong> When using online cloud APIs, the provider may process and use the data to train their future models depending on their terms of service.
+                                <br><br>
+                                <strong>Verba Privacy Guarantee:</strong> <em>Verba does not retain any information anywhere online.</em> All requests are sent directly from your client machine to your selected provider end-to-end.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step-by-Step Feature Guide -->
+            <h3 class="feature-guide-title">
+                Step-by-Step Guide for Every Feature
+            </h3>
+
+            <div class="feature-guide-grid">
+                <div class="guide-card">
+                    <div class="guide-num">01</div>
+                    <h4>Global Hotkey Text Capture</h4>
+                    <p>Select text anywhere on your screen and press <code>Ctrl+Alt+P</code> (or <code>Cmd+Alt+P</code> on Mac). Verba pops up directly over your cursor with captured text pre-loaded.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">02</div>
+                    <h4>8 Preset Polishing Styles</h4>
+                    <p>Instant one-click presets for common writing needs:</p>
+                    <ul class="guide-bullet-list">
+                        <li><strong>Concise:</strong> Streamlines text into brief, impactful phrasing.</li>
+                        <li><strong>Professional:</strong> Polishes tone for work, clients, and emails.</li>
+                        <li><strong>Detailed:</strong> Elaborates context with comprehensive detail.</li>
+                        <li><strong>Formal:</strong> Elevates vocabulary and academic structure.</li>
+                        <li><strong>Grammar:</strong> Corrects spelling, grammar, and punctuation.</li>
+                        <li><strong>Medical:</strong> Formats clinical reports and medical notes.</li>
+                        <li><strong>Summarize:</strong> Condenses long paragraphs into key takeaways.</li>
+                        <li><strong>Generative:</strong> Creative generation from custom prompts.</li>
+                    </ul>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">03</div>
+                    <h4>Custom Prompts & Number Shortcuts</h4>
+                    <p>Enter custom instructions into the prompt bar (e.g. <em>"Rephrase as bullet points"</em>) or press keys <code>1</code> through <code>8</code> for instant shortcut execution.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">04</div>
+                    <h4>Auto-Paste & Clipboard Restoration</h4>
+                    <p>Verba copies the polished output to your clipboard and injects it straight back into your focused text area. It restores your prior clipboard content so you don't lose copied data.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">05</div>
+                    <h4>Multi-Provider AI Switching</h4>
+                    <p>Choose between 100% offline local models (Llama sidecar / local Ollama) or active online APIs (OpenAI GPT-4o, Claude 3.5, Gemini 1.5, Groq, OpenRouter) inside Settings.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">06</div>
+                    <h4>Custom System Prompts & Keybindings</h4>
+                    <p>Customize system prompts for each style or rebind custom hotkeys under <strong>Settings &rarr; Preferences</strong> to match your personal workflow.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">07</div>
+                    <h4>Local History Log</h4>
+                    <p>Review past text transformations, original inputs, models used, and execution timestamps stored safely on your machine in <strong>Settings &rarr; Local History</strong>.</p>
+                </div>
+
+                <div class="guide-card">
+                    <div class="guide-num">08</div>
+                    <h4>Tray Engine & Automatic Updates</h4>
+                    <p>Verba operates silently in your system tray without interrupting desktop usage. Check for updates seamlessly in <strong>Settings &rarr; Updates</strong>.</p>
                 </div>
             </div>
         </section>
