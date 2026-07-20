@@ -80,15 +80,37 @@ async function main() {
   } else {
     // macOS extraction
     execSync(`tar -xzf "${archivePath}" -C "${BIN_DIR}"`);
+    
     let llamaCliPath = path.join(BIN_DIR, 'llama-cli');
     if (!fs.existsSync(llamaCliPath)) {
-      if (fs.existsSync(path.join(BIN_DIR, 'build', 'bin', 'llama-cli'))) {
-        llamaCliPath = path.join(BIN_DIR, 'build', 'bin', 'llama-cli');
+      const entries = fs.readdirSync(BIN_DIR);
+      for (const entry of entries) {
+        const fullEntry = path.join(BIN_DIR, entry);
+        if (fs.statSync(fullEntry).isDirectory()) {
+          const candidate = path.join(fullEntry, 'llama-cli');
+          if (fs.existsSync(candidate)) {
+            // Move all extracted contents from subfolder up to BIN_DIR
+            const subFiles = fs.readdirSync(fullEntry);
+            for (const subFile of subFiles) {
+              const src = path.join(fullEntry, subFile);
+              const dest = path.join(BIN_DIR, subFile);
+              if (fs.existsSync(dest)) fs.rmSync(dest, { recursive: true, force: true });
+              fs.renameSync(src, dest);
+            }
+            fs.rmSync(fullEntry, { recursive: true, force: true });
+            break;
+          }
+        }
       }
     }
+
+    llamaCliPath = path.join(BIN_DIR, 'llama-cli');
     if (fs.existsSync(llamaCliPath)) {
       fs.renameSync(llamaCliPath, path.join(BIN_DIR, 'verba-engine'));
       execSync(`chmod +x "${path.join(BIN_DIR, 'verba-engine')}"`);
+    } else {
+      console.error('ERROR: llama-cli binary was not found after macOS tar extraction!');
+      process.exit(1);
     }
   }
 
