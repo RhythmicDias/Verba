@@ -15,7 +15,7 @@ fn get_style_prompt(style: &str) -> &str {
         "concise" => "Rewrite to be extremely brief, direct, and concise. Remove all filler and redundant words, while strictly preserving all original facts.",
         "detailed" => "Provide a clear, detailed version of the text by fully articulating and clarifying the points, while strictly preserving the original facts and meaning.",
         "formal" => "Rewrite in a formal, professional, and grammatically precise tone. Replace contractions and casual words with standard professional vocabulary, while strictly preserving the original facts.",
-        "funny" => "Rewrite to be witty and humorous. Add lighthearted humor, while strictly preserving the original facts and core meaning.",
+        "grammar" => "Correct only the grammar, spelling, and punctuation errors in the text below. Do not rephrase, reword, simplify, or replace any words that are already grammatically correct. Do not change sentence structure, tone, vocabulary, or word choice. Preserve the original wording exactly except where a word is grammatically wrong (e.g., wrong verb form, wrong article, subject-verb agreement). If a word is already correct, leave it untouched even if a more natural or polished alternative exists. Output only the corrected text, with no explanation.",
         "medical" => "Rewrite into a formal, concise, and clinical medical note. Use standard medical terminology, while strictly preserving all clinical details.",
         "summarize" => "Summarize the main points into a single, short sentence or brief bullet points, extracting only the essential takeaways while retaining critical context.",
         "generative" => "Generate content strictly based on the prompt instructions and the provided context details. DO NOT be chatty. Do NOT include any introductory remarks, conversational filler, conversational prefixes, explanations, or notes. Output ONLY the raw generated content.",
@@ -24,7 +24,7 @@ fn get_style_prompt(style: &str) -> &str {
     }
 }
 
-fn clean_output(text: &str, style: &str) -> String {
+fn clean_output(text: &str, _style: &str) -> String {
     let mut cleaned = text.trim().to_string();
 
     // 1. Remove introductory filler sentences
@@ -33,7 +33,7 @@ fn clean_output(text: &str, style: &str) -> String {
     }
 
     // 2. Remove common simple headers
-    if let Ok(re) = Regex::new(r"(?i)^(Polished|Rewritten|Summary|Clinical|Medical|Witty|Formal|Concise|Detailed)\s+(text|version|note|summary)?:") {
+    if let Ok(re) = Regex::new(r"(?i)^(Polished|Rewritten|Summary|Clinical|Medical|Grammar|Formal|Concise|Detailed)\s+(text|version|note|summary)?:") {
         cleaned = re.replace_all(&cleaned, "").to_string();
     }
 
@@ -61,11 +61,9 @@ fn clean_output(text: &str, style: &str) -> String {
     // Remove target_text tags if the model outputs them
     cleaned = cleaned.replace("<target_text>", "").replace("</target_text>", "");
 
-    // 5. Remove emojis unless style is funny
-    if style != "funny" {
-        if let Ok(re) = Regex::new(r"[\u{1F300}-\u{1F9FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{1F1E6}-\u{1F1FF}]") {
-            cleaned = re.replace_all(&cleaned, "").to_string();
-        }
+    // 5. Remove emojis
+    if let Ok(re) = Regex::new(r"[\u{1F300}-\u{1F9FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}]|[\u{1F1E6}-\u{1F1FF}]") {
+        cleaned = re.replace_all(&cleaned, "").to_string();
     }
 
     cleaned.trim().to_string()
@@ -105,11 +103,7 @@ pub async fn call_llm(
         get_style_prompt(&style)
     };
 
-    let emoji_rule = if style == "funny" {
-        "You may use up to 2 contextually relevant emojis to enhance the humor, but do NOT spam emojis or repeat text."
-    } else {
-        "CRITICAL: Do NOT use any emojis or emoticons under any circumstances."
-    };
+    let emoji_rule = "CRITICAL: Do NOT use any emojis or emoticons under any circumstances.";
 
     let (system_message, user_message) = if text.trim().is_empty() {
         (
