@@ -47,9 +47,14 @@ pub fn focus_window(window: Option<isize>) {
 #[cfg(target_os = "macos")]
 pub fn focus_window(window: Option<String>) {
     if let Some(ref app_name) = window {
+        // Sanitize app_name to prevent AppleScript injection.
+        let safe_name: String = app_name
+            .chars()
+            .filter(|c| !"\"\\{};&|`'".contains(*c))
+            .collect();
         let _ = std::process::Command::new("osascript")
             .arg("-e")
-            .arg(format!("tell application \"{}\" to activate", app_name))
+            .arg(format!("tell application \"{}\" to activate", safe_name))
             .output();
         std::thread::sleep(std::time::Duration::from_millis(150));
     }

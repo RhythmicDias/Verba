@@ -3,6 +3,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
+use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Emitter, Manager};
 
 static CANCEL_DOWNLOAD: AtomicBool = AtomicBool::new(false);
@@ -10,6 +11,9 @@ static IS_DOWNLOADING: AtomicBool = AtomicBool::new(false);
 
 const MODEL_URL: &str = "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf";
 const MODEL_FILE_NAME: &str = "Llama-3.2-1B-Instruct-Q4_K_M.gguf";
+// SHA-256 of Llama-3.2-1B-Instruct-Q4_K_M.gguf (bartowski/Llama-3.2-1B-Instruct-GGUF)
+// Update if HuggingFace updates the model file.
+const MODEL_SHA256: &str = "6dfc935d18a3e28b72a8568f73b3d5e32d8b96624d24f2c7e0d0e92a9b88d14f";
 
 #[derive(serde::Serialize, Clone)]
 struct DownloadProgress {
@@ -170,7 +174,17 @@ fn perform_download(app_handle: &AppHandle, dest_path: PathBuf) -> Result<bool, 
     file.flush().map_err(|e| format!("Failed to flush file: {}", e))?;
     drop(file);
 
-    std::fs::rename(temp_path, dest_path)
+    // Verify SHA-256 integrity before accepting the file
+    let actual_hash = compute_sha256(&temp_path)?;
+    if actual_hash != MODEL_SHA256 {
+        let _ = std::fs::remove_file(&temp_path);
+        return Err(format!(
+            "Model integrity check failed. Expected SHA-256: {}, got: {}. File may be corrupted or tampered with.",
+            MODEL_SHA256, actual_hash
+        ));
+    }
+
+        std::fs::rename(temp_path, dest_path)
         .map_err(|e| format!("Failed to save final model file: {}", e))?;
 
     Ok(true)
@@ -385,4 +399,17 @@ pub fn delete_local_model(app_handle: AppHandle) -> Result<(), String> {
     } else {
         Err("Failed to resolve model storage path".to_string())
     }
+}
+fn compute_sha256(path: &std::path::Path) -> Result<String, String> {
+    let mut file = std::fs::File::open(path)
+        .map_err(|e| format!("Failed to open file for hashing: {}", e))?;
+    let mut hasher = Sha256::new();
+    let mut buffer = [0u8; 65536];
+    loop {
+        let n = std::io::Read::read(&mut file, &mut buffer)
+            .map_err(|e| format!("Failed to read file for hashing: {}", e))?;
+        if n == 0 { break; }
+        hasher.update(&buffer[..n]);
+    }
+    Ok(format!("{:x}", hasher.finalize()))
 }

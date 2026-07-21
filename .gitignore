@@ -1,22 +1,4 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -31,6 +13,10 @@ dist-ssr
 *.local
 .env
 
+# Sensitive keys - never commit
+decoded.key
+*.key
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -41,7 +27,16 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Platform llama.cpp binaries (downloaded at build time)
 llama-macos-arm64/
 llama-macos-x64/
-llama-win-cuda-12.4-x64/  
-src-tauri/binaries/
+llama-win-cuda-12.4-x64/
+src-tauri/binaries/
+
+# Raw screenshots (not part of docs)
+VerbaScreenshots/
+
+# Internal dev notes accidentally placed in docs/
+docs/UPDATE_PLAN.md
+docs/walkthrough.md
