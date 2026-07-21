@@ -5325,7 +5325,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "verba"
-version = "0.1.12"
+version = "0.1.15"
 dependencies = [
  "chrono",
  "keyring",
@@ -5333,6 +5333,7 @@ dependencies = [
  "reqwest 0.12.28",
  "serde",
  "serde_json",
+ "sha2",
  "tauri",
  "tauri-build",
  "tauri-plugin-clipboard-manager",
